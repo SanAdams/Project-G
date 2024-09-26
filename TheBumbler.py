@@ -42,13 +42,8 @@ def scrape_bio_card():
         'gender_img_src': 'https://us1.ecdn2.bumbcdn.com/i/big/assets/bumble_lifestyle_badges/normal/web/standard/sz___size__/ic_badge_profileChips_dating_genderv2.png',
     }
 
+    bio = safe_get_element(By.XPATH, '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[1]/article/div[1]/div[2]/article/div/section/div/p').text
     height = physical_activity_frequency = education_level = drinking_frequency = smoking_frequency = weed_smoking_frequency = relationship_type = family_plans = star_sign = political_leaning = religion = gender = None
-
-    """ current_image_container = attribute_images_containers[0].find_element(By.CLASS_NAME, 'pill__image')
-    current_image_src = current_image_container.get_attribute('src')
-    print(current_image_src)
-    print(current_image_container.get_attribute('alt'))
-    print(img_src_map['height_img_src'] == current_image_src) """
     
     # Depending on the alt text of the "pill" images, assign the correct value to the correct variable 
     for i in range(num_attributes):
@@ -81,7 +76,7 @@ def scrape_bio_card():
             gender = current_image_container.get_attribute('alt')
  
     return(
-        height, physical_activity_frequency,
+        bio, height, physical_activity_frequency,
         education_level, drinking_frequency,
         smoking_frequency,weed_smoking_frequency, 
         relationship_type, family_plans,
@@ -91,7 +86,12 @@ def scrape_bio_card():
         
 
 def scrape_picture_card():
-    pass
+    profile_cards = safe_get_element(By.CLASS_NAME, 'encounters-album__story')
+    num_cards = len(profile_cards)
+    num_picture_cards = num_cards - 3
+
+    for i in range(num_picture_cards):
+        pass
 
 def determine_location_type(location: str):
     if "Lives in" in location:
