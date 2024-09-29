@@ -95,6 +95,7 @@ def determine_location_type(location: str):
     else:
         return "home_town"
 
+# TODO: Clean text properly, location strings are getting cut where they shouldn't be
 def clean_location_text(location: str):
     location_type = determine_location_type(location)
     if location_type == 'home_town':
@@ -228,7 +229,6 @@ if __name__ == '__main__':
 
         # If there is at least one flavor card with text
         # and some number of cards with 2 pictures, scroll past them
-
         while not current_location.is_displayed():
             card += 1
             scroll_to(card)
