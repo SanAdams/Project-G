@@ -45,10 +45,12 @@ def scrape_bio_card():
         'gender_img_src': 'https://us1.ecdn2.bumbcdn.com/i/big/assets/bumble_lifestyle_badges/normal/web/standard/sz___size__/ic_badge_profileChips_dating_genderv2.png',
     }
 
-    height = physical_activity_frequency = education_level = drinking_frequency = smoking_frequency = weed_smoking_frequency = relationship_type = family_plans = star_sign = political_leaning = religion = gender = ""
+    height = physical_activity_frequency = education_level = drinking_frequency = ""
+    smoking_frequency = weed_smoking_frequency = relationship_type = family_plans = ""
+    star_sign = political_leaning = religion = gender = ""
     bio = safe_get_element_text(By.XPATH, '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[1]/article/div[1]/div[2]/article/div/section/div/p')
     
-    # Depending on the alt text of the "pill" images, assign the correct value to the correct variable 
+    # Assign the attribute the right value 
     for i in range(num_attributes):
         current_image_container = attribute_images_containers[i].find_element(By.CLASS_NAME, 'pill__image')
         current_image_src = current_image_container.get_attribute('src')
@@ -81,10 +83,10 @@ def scrape_bio_card():
     return(
         bio, height, physical_activity_frequency,
         education_level, drinking_frequency,
-        smoking_frequency,weed_smoking_frequency, 
-        relationship_type, family_plans,
-        star_sign, political_leaning,
-        religion, gender
+        smoking_frequency, gender, 
+        weed_smoking_frequency, relationship_type,
+        family_plans, star_sign,
+        political_leaning, religion
     )
 
 def determine_location_type(location: str):
@@ -104,11 +106,10 @@ def clean_location_text(location: str):
     return location
 
 def scrape_location_card():
-    print("Scraping location")
+  
     current_location = safe_get_element(By.CLASS_NAME, 'location-widget__town')
     if current_location:
         current_location = current_location.text
-    
     location_widget_element = safe_get_element(By.CLASS_NAME, 'location-widget__info')
     home_town = ""
     residential_location = "" 
@@ -135,13 +136,46 @@ def scrape_location_card():
     
     return (current_location, home_town, residential_location, top_spotify_artists)
 
-def scroll_down(multiplier: int):
+def scrape_flavor_cards(card: int, bio_present: bool):
+    album_containter = driver.find_element(By.XPATH, '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[1]/article/div[1]')
+    flavor_cards = filter_ptags(album_containter.find_elements(By.TAG_NAME, 'p'), 'encounters-story-about__text')
+    num_flavor_cards = len(flavor_cards)
+    flavor_texts = []
+    
+    if bio_present:
+        start = 1
+    else:
+        start = 0
+
+    for i in range(start, num_flavor_cards):
+        flavor_texts.append(flavor_cards[i].text.strip())
+        card += 1
+        scroll_to(card)
+        time.sleep(1)
+
+    return flavor_texts
+
+
+def filter_ptags(ptags, class_name):
+    return [p for p in ptags if class_name == p.get_attribute('class')]
+    
+
+def scroll_to(multiplier: int):
     scrollDown = f'-{multiplier * 100}%'
     albumContainer = safe_get_element(By.XPATH, '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[1]/article/div[1]')
     driver.execute_script(f"arguments[0].style.transform = 'translateY({scrollDown})';", albumContainer)
 
+def next_profile():
+    buttons_container = driver.find_element(By.XPATH, '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[2]/div/div[2]/div')
+    buttons_list = buttons_container.find_elements(By.CLASS_NAME, 'encounters-controls__action')
+    if len(buttons_list) == 4:
+        pass_button = buttons_list[1]
+    else:
+        pass_button = buttons_list[0]
+    pass_button.click()
+
 if __name__ == '__main__':
-    NUM_PROFILES = 2
+    NUM_PROFILES = 1
 
     options = Options()
     options.add_experimental_option("debuggerAddress", "localhost:9222")
@@ -156,44 +190,55 @@ if __name__ == '__main__':
     user = DatingAppUser.DatingAppUser()
 
     start = time.time()
-    sleep = 3
+    sleep = 1
+
     for profile in range(NUM_PROFILES):
-        start = time.time()
-        current_card = 0
+        card = 0
+
+        time.sleep(sleep)
         print(scrape_name_card())
-        current_card += 1
-        scroll_down(current_card)
+        card += 1
+        scroll_to(card)
+
         time.sleep(sleep)
-        print(scrape_bio_card())
-        current_card += 1
-        scroll_down(current_card)
-        time.sleep(sleep)
+        bio_card_data = []
+        bio_card_data = scrape_bio_card()
+        print(bio_card_data)
+        if bio_card_data[0]:
+            has_bio = True
+        else:
+            has_bio = False
+        card += 1
+        scroll_to(card)
 
         album_containter = driver.find_element(By.XPATH, '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[1]/article/div[1]')
-        num_flavor_cards = len(album_containter.find_elements(By.CLASS_NAME, 'encounters-album__story')) - 3
-        for i in range(1, num_flavor_cards):
-            current_card += 1
-            scroll_down(current_card)
+        ptags = album_containter.find_elements(By.TAG_NAME, 'p')
+        current_location = album_containter.find_element(By.CLASS_NAME, 'location-widget__town')
 
-        #TO-DO: fix flavor_text scraping code
-        """profile_cards_container = driver.find_element(By.XPATH, '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[1]/article/div[1]')
-        flavor_text_containers = profile_cards_container.find_elements(By.CLASS_NAME, 'encounters-story-section__content')
-        num_flavor_text_containers = len(flavor_text_containers)
+        # If there are only cards with 2 pictures, scroll past them
+        if len(ptags) == 1:
+            while not current_location.is_displayed():
+                card += 1
+                scroll_to(card)
+                time.sleep(sleep)
 
-        for i in range(1, num_flavor_text_containers):
-            flavor_text = flavor_text_containers[i].text    
-            print(flavor_text)
-            scroll_down(current_card)
-            current_card += 1
-            time.sleep(1) """
-    
-        scrape_location_card()
-        buttons_container = driver.find_element(By.XPATH, '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[2]/div/div[2]/div')
-        buttons_list = buttons_container.find_elements(By.CLASS_NAME, 'encounters-controls__action')
-        pass_button = buttons_list[1]
-        pass_button.click()
         time.sleep(sleep)
-        time_scraped = time.time()
+
+        print(scrape_flavor_cards(card, has_bio))
+
+        # If there is at least one flavor card with text
+        # and some number of cards with 2 pictures, scroll past them
+
+        while not current_location.is_displayed():
+            card += 1
+            scroll_to(card)
+            time.sleep(sleep)
+
+        time.sleep(sleep)
+        print(scrape_location_card())
+
+        next_profile()
+   
     end = time.time()
     print(f"It took {(end-start)} seconds to scrape {NUM_PROFILES} profiles")
     
