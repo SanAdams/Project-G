@@ -95,15 +95,14 @@ def determine_location_type(location: str):
     else:
         return "home_town"
 
-# TODO: Clean text properly, location strings are getting cut where they shouldn't be
 def clean_location_text(location: str):
     location_type = determine_location_type(location)
     if location_type == 'home_town':
         length = len(location)
-        location = location[12:length-4]
+        location = location[8:length-4]
     else:
         length = len(location)
-        location = location[8:length-4]
+        location = location[12:length-4]
     return location
 
 def scrape_location_card():
