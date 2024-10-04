@@ -249,7 +249,3 @@ if __name__ == '__main__':
    
     end = time.time()
     print(f"It took {(end-start)} seconds to scrape {NUM_PROFILES} profiles")
-    
-    for bumbler in bumbleUsers:
-        for attr, value in vars(bumbler).items():
-            print(f"{attr}: {value}")
