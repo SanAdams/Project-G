@@ -2,40 +2,40 @@ from typing import List
 
 class DatingAppUser:
     def __init__(self):
-        self.name: str = None
-        self.app: str = None
-        self.age: str = None
-        self.profession: str = None
-        self.education: str = None
-        self.height: int = None
-        self.physical_activity_frequency: str = None 
-        self.education_level: str = None
-        self.drinking_frequency: str = None
-        self.smoking_frequency: str = None
-        self.gender: str = None
-        self.weed_smoking_frequency: str = None
-        self.relationship_type: str = None
-        self.family_plans: str = None
-        self.star_sign: str = None
-        self.political_leaning: str = None
-        self.religion: str = None
-        self.current_location: str = None
-        self.dating_app: str = None
-        self.top_spotify_artists: List[str] = None
-        self.anthem: str = None
-        self.passions: List[str] = None
-        self.basics: List[str] = None
-        self.pets: str = None
-        self.communication_style: str = None
-        self.love_language: str = None
-        self.sleeping_habits: str = None
-        self.dietary_preference: str = None
-        self.bio: str = None
-        self.home_town = None
+        self.name: str = ""
+        self.age: str = ""
+        self.profession: str = ""
+        self.education: str = ""
+        self.height: int = ""
+        self.physical_activity_frequency: str = "" 
+        self.education_level: str = ""
+        self.drinking_frequency: str = ""
+        self.smoking_frequency: str = ""
+        self.gender: str = ""
+        self.weed_smoking_frequency: str = ""
+        self.relationship_type: str = ""
+        self.relationship_goals = ""
+        self.family_plans: str = ""
+        self.star_sign: str = ""
+        self.political_leaning: str = ""
+        self.religion: str = ""
+        self.current_location: str = ""
+        self.dating_app: str = ""
+        self.top_spotify_artists: List[str] = []
+        self.anthem: str = ""
+        self.passions: List[str] = []
+        self.pets: str = ""
+        self.communication_style: str = ""
+        self.love_language: str = ""
+        self.sleeping_habits: str = ""
+        self.dietary_preference: str = ""
+        self.bio: str = ""
+        self.home_town = ""
         self.time_scraped = 0
+        self.flavor_text = []
+        self.residential_location = ""
 
     name: str
-    app: str
     age: int
     profession: str
     education: str
@@ -47,6 +47,7 @@ class DatingAppUser:
     gender: str
     weed_smoking_frequency: str
     relationship_type: str
+    relationship_goals: str
     family_plans: str
     star_sign: str
     political_leaning: str
@@ -56,7 +57,6 @@ class DatingAppUser:
     top_spotify_artists: List[str]
     anthem: str
     passions: List[str]
-    basics: List[str]
     pets: str
     communication_style: str
     love_language: str
@@ -65,5 +65,6 @@ class DatingAppUser:
     bio: str
     home_town: str
     time_scraped: int 
-    
+    flavor_text: List[str]
+    residential_location: str
 

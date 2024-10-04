@@ -11,14 +11,14 @@ def safe_get_element_text(by:By, value:str):
         element = driver.find_element(by, value)
         return element.text.strip()
     except NoSuchElementException:
-        return ""
+        return
 
 def safe_get_element(by:By, value:str):
     try:
         element = driver.find_element(by, value)
         return element
     except NoSuchElementException:
-        return ""
+        return
     
 def scrape_name_card():
     name = safe_get_element_text(By.XPATH, '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[1]/article/div[1]/div[1]/article/div[2]/section/header/h1/span[1]')
@@ -46,7 +46,7 @@ def scrape_bio_card():
     }
 
     height = physical_activity_frequency = education_level = drinking_frequency = ""
-    smoking_frequency = weed_smoking_frequency = relationship_type = family_plans = ""
+    smoking_frequency = weed_smoking_frequency = relationship_goals = family_plans = ""
     star_sign = political_leaning = religion = gender = ""
     bio = safe_get_element_text(By.XPATH, '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[1]/article/div[1]/div[2]/article/div/section/div/p')
     
@@ -68,7 +68,7 @@ def scrape_bio_card():
         elif current_image_src == img_src_map['weed_img_src']:
             weed_smoking_frequency = current_image_container.get_attribute('alt')
         elif current_image_src == img_src_map['relationship_img_src']:
-            relationship_type = current_image_container.get_attribute('alt')
+            relationship_goals = current_image_container.get_attribute('alt')
         elif current_image_src == img_src_map['family_plans_img_src']:
             family_plans = current_image_container.get_attribute('alt')
         elif current_image_src == img_src_map['star_sign_img_src']:
@@ -84,7 +84,7 @@ def scrape_bio_card():
         bio, height, physical_activity_frequency,
         education_level, drinking_frequency,
         smoking_frequency, gender, 
-        weed_smoking_frequency, relationship_type,
+        weed_smoking_frequency, relationship_goals,
         family_plans, star_sign,
         political_leaning, religion
     )
@@ -175,7 +175,7 @@ def next_profile():
     pass_button.click()
 
 if __name__ == '__main__':
-    NUM_PROFILES = 1
+    NUM_PROFILES = 2
 
     options = Options()
     options.add_experimental_option("debuggerAddress", "localhost:9222")
@@ -189,22 +189,29 @@ if __name__ == '__main__':
     # Make new user to store data
     user = DatingAppUser.DatingAppUser()
 
-    start = time.time()
+    start = int(time.time())
     sleep = 1
 
     for profile in range(NUM_PROFILES):
+        bumbleUsers = []
+        user = DatingAppUser.DatingAppUser()
+        user.dating_app = "Bumble"
         card = 0
 
         time.sleep(sleep)
-        print(scrape_name_card())
+        user.name, user.age, user.profession = scrape_name_card()
         card += 1
         scroll_to(card)
 
         time.sleep(sleep)
         bio_card_data = []
         bio_card_data = scrape_bio_card()
-        print(bio_card_data)
-        if bio_card_data[0]:
+        user.bio, user.height, user.physical_activity_frequency = bio_card_data[0], bio_card_data[1], bio_card_data[2]
+        user.education_level, user.drinking_frequency, user.smoking_frequency = bio_card_data[3], bio_card_data[4], bio_card_data[5]
+        user.gender, user.weed_smoking_frequency, user.relationship_goals = bio_card_data[6], bio_card_data[7], bio_card_data[8]
+        user.family_plans, user.star_sign, user.political_leaning, user.religion = bio_card_data[9],bio_card_data[10],bio_card_data[11],bio_card_data[12]
+
+        if user.bio:
             has_bio = True
         else:
             has_bio = False
@@ -216,15 +223,14 @@ if __name__ == '__main__':
         current_location = album_containter.find_element(By.CLASS_NAME, 'location-widget__town')
 
         # If there are only cards with 2 pictures, scroll past them
-        if len(ptags) == 1:
-            while not current_location.is_displayed():
-                card += 1
-                scroll_to(card)
-                time.sleep(sleep)
+        while not current_location.is_displayed():
+            card += 1
+            scroll_to(card)
+            time.sleep(sleep)
 
         time.sleep(sleep)
 
-        print(scrape_flavor_cards(card, has_bio))
+        user.flavor_text = scrape_flavor_cards(card, has_bio)
 
         # If there is at least one flavor card with text
         # and some number of cards with 2 pictures, scroll past them
@@ -234,10 +240,16 @@ if __name__ == '__main__':
             time.sleep(sleep)
 
         time.sleep(sleep)
-        print(scrape_location_card())
+        user.current_location, user.home_town, user.residential_location, user.top_spotify_artists = scrape_location_card()
 
-        next_profile()
+        # # next_profile()
+        scraped_end = int(time.time())
+        user.time_scraped = int(time.time())
+        bumbleUsers.append(user)
    
     end = time.time()
     print(f"It took {(end-start)} seconds to scrape {NUM_PROFILES} profiles")
     
+    for bumbler in bumbleUsers:
+        for attr, value in vars(bumbler).items():
+            print(f"{attr}: {value}")
