@@ -3,7 +3,7 @@ from typing import List
 class DatingAppUser:
     def __init__(self):
         self.name: str = ""
-        self.age: str = ""
+        self.age: int = None
         self.profession: str = ""
         self.education: str = ""
         self.height: int = ""
@@ -23,7 +23,7 @@ class DatingAppUser:
         self.dating_app: str = ""
         self.top_spotify_artists: List[str] = []
         self.anthem: str = ""
-        self.passions: List[str] = []
+        self.interests: List[str] = []
         self.pets: str = ""
         self.communication_style: str = ""
         self.love_language: str = ""
@@ -56,7 +56,7 @@ class DatingAppUser:
     dating_app: str
     top_spotify_artists: List[str]
     anthem: str
-    passions: List[str]
+    interests: List[str]
     pets: str
     communication_style: str
     love_language: str
