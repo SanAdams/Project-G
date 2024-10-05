@@ -11,19 +11,20 @@ def safe_get_element_text(by:By, value:str):
         element = driver.find_element(by, value)
         return element.text.strip()
     except NoSuchElementException:
-        return
-
+        return ""
+    
 def safe_get_element(by:By, value:str):
     try:
         element = driver.find_element(by, value)
         return element
     except NoSuchElementException:
-        return
+        return None
     
 def scrape_name_card():
     name = safe_get_element_text(By.XPATH, '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[1]/article/div[1]/div[1]/article/div[2]/section/header/h1/span[1]')
     age = safe_get_element_text(By.XPATH, '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[1]/article/div[1]/div[1]/article/div[2]/section/header/h1/span[2]').replace(", " , "")
     profession = safe_get_element_text(By.CLASS_NAME, 'encounters-story-profile__occupation')
+    age = int(age)
     return (name, age, profession)
 
 def scrape_bio_card():
@@ -175,7 +176,7 @@ def next_profile():
     pass_button.click()
 
 if __name__ == '__main__':
-    NUM_PROFILES = 2
+    NUM_PROFILES = 1
 
     options = Options()
     options.add_experimental_option("debuggerAddress", "localhost:9222")
@@ -189,7 +190,7 @@ if __name__ == '__main__':
     # Make new user to store data
     user = DatingAppUser.DatingAppUser()
 
-    start = int(time.time())
+    start = time.time()
     sleep = 1
 
     for profile in range(NUM_PROFILES):
@@ -210,7 +211,7 @@ if __name__ == '__main__':
         user.education_level, user.drinking_frequency, user.smoking_frequency = bio_card_data[3], bio_card_data[4], bio_card_data[5]
         user.gender, user.weed_smoking_frequency, user.relationship_goals = bio_card_data[6], bio_card_data[7], bio_card_data[8]
         user.family_plans, user.star_sign, user.political_leaning, user.religion = bio_card_data[9],bio_card_data[10],bio_card_data[11],bio_card_data[12]
-
+        
         if user.bio:
             has_bio = True
         else:
@@ -223,17 +224,18 @@ if __name__ == '__main__':
         current_location = album_containter.find_element(By.CLASS_NAME, 'location-widget__town')
 
         # If there are only cards with 2 pictures, scroll past them
-        while not current_location.is_displayed():
-            card += 1
-            scroll_to(card)
-            time.sleep(sleep)
+        if len(ptags) == 1:
+            while not current_location.is_displayed():
+                card += 1
+                scroll_to(card)
+                time.sleep(sleep)
 
         time.sleep(sleep)
 
         user.flavor_text = scrape_flavor_cards(card, has_bio)
 
         # If there is at least one flavor card with text
-        # and some number of cards with 2 pictures, scroll past them
+        # and some number of cards with 2 pictures, scrape then scroll past them
         while not current_location.is_displayed():
             card += 1
             scroll_to(card)
@@ -242,10 +244,13 @@ if __name__ == '__main__':
         time.sleep(sleep)
         user.current_location, user.home_town, user.residential_location, user.top_spotify_artists = scrape_location_card()
 
-        # # next_profile()
-        scraped_end = int(time.time())
         user.time_scraped = int(time.time())
         bumbleUsers.append(user)
+        # next_profile()
    
     end = time.time()
     print(f"It took {(end-start)} seconds to scrape {NUM_PROFILES} profiles")
+    
+    for bumbler in bumbleUsers:
+        for attr, value in vars(bumbler).items():
+            print(f"{attr}: {value}")
