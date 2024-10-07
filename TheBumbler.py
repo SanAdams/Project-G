@@ -1,5 +1,6 @@
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.chrome.service import Service
@@ -24,7 +25,6 @@ def scrape_name_card():
     name = safe_get_element_text(By.XPATH, '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[1]/article/div[1]/div[1]/article/div[2]/section/header/h1/span[1]')
     age = safe_get_element_text(By.XPATH, '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[1]/article/div[1]/div[1]/article/div[2]/section/header/h1/span[2]').replace(", " , "")
     profession = safe_get_element_text(By.CLASS_NAME, 'encounters-story-profile__occupation')
-    age = int(age)
     return (name, age, profession)
 
 def scrape_bio_card():
@@ -137,21 +137,17 @@ def scrape_location_card():
     
     return (current_location, home_town, residential_location, top_spotify_artists)
 
-def scrape_flavor_cards(card: int, bio_present: bool):
+def scrape_flavor_cards(bio_present: bool):
     album_containter = driver.find_element(By.XPATH, '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[1]/article/div[1]')
     flavor_cards = filter_ptags(album_containter.find_elements(By.TAG_NAME, 'p'), 'encounters-story-about__text')
     num_flavor_cards = len(flavor_cards)
     flavor_texts = []
     
-    if bio_present:
-        start = 1
-    else:
-        start = 0
+    start = 1 if bio_present else 0
 
     for i in range(start, num_flavor_cards):
         flavor_texts.append(flavor_cards[i].text.strip())
-        card += 1
-        scroll_to(card)
+        scroll_down()
         time.sleep(1)
 
     return flavor_texts
@@ -161,10 +157,10 @@ def filter_ptags(ptags, class_name):
     return [p for p in ptags if class_name == p.get_attribute('class')]
     
 
-def scroll_to(multiplier: int):
-    scrollDown = f'-{multiplier * 100}%'
-    albumContainer = safe_get_element(By.XPATH, '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[1]/article/div[1]')
-    driver.execute_script(f"arguments[0].style.transform = 'translateY({scrollDown})';", albumContainer)
+def scroll_down():
+    body = driver.find_element(By.TAG_NAME, 'body')
+    body.send_keys(Keys.ARROW_DOWN)
+    return
 
 def next_profile():
     buttons_container = driver.find_element(By.XPATH, '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[2]/div/div[2]/div')
@@ -175,9 +171,7 @@ def next_profile():
         pass_button = buttons_list[0]
     pass_button.click()
 
-if __name__ == '__main__':
-    NUM_PROFILES = 1
-
+def init_driver():
     options = Options()
     options.add_experimental_option("debuggerAddress", "localhost:9222")
 
@@ -185,10 +179,16 @@ if __name__ == '__main__':
     service = Service("D:/FUNSIES/Project G/chromedriver-win64/chromedriver.exe")
 
     # Initialize WebDriver with Service and ChromeOptions
-    driver = webdriver.Chrome(service=service, options=options)
+    driver = webdriver.Chrome(service, options)
+
+    return driver
+
+if __name__ == '__main__':
+    driver = init_driver()
 
     # Make new user to store data
     user = DatingAppUser.DatingAppUser()
+    NUM_PROFILES = 1
 
     start = time.time()
     sleep = 1
@@ -201,8 +201,13 @@ if __name__ == '__main__':
 
         time.sleep(sleep)
         user.name, user.age, user.profession = scrape_name_card()
-        card += 1
-        scroll_to(card)
+        scroll_down()
+
+        # Retry if the scrape failed
+        if not user.name or not user.age:
+            print("Scrape failed, refreshing")
+            driver.refresh()
+            continue
 
         time.sleep(sleep)
         bio_card_data = []
@@ -216,8 +221,8 @@ if __name__ == '__main__':
             has_bio = True
         else:
             has_bio = False
-        card += 1
-        scroll_to(card)
+     
+        scroll_down()
 
         album_containter = driver.find_element(By.XPATH, '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[1]/article/div[1]')
         ptags = album_containter.find_elements(By.TAG_NAME, 'p')
@@ -226,19 +231,19 @@ if __name__ == '__main__':
         # If there are only cards with 2 pictures, scroll past them
         if len(ptags) == 1:
             while not current_location.is_displayed():
-                card += 1
-                scroll_to(card)
+             
+                scroll_down()
                 time.sleep(sleep)
 
         time.sleep(sleep)
 
-        user.flavor_text = scrape_flavor_cards(card, has_bio)
+        user.flavor_text = scrape_flavor_cards(has_bio)
 
         # If there is at least one flavor card with text
         # and some number of cards with 2 pictures, scrape then scroll past them
         while not current_location.is_displayed():
-            card += 1
-            scroll_to(card)
+         
+            scroll_down()
             time.sleep(sleep)
 
         time.sleep(sleep)
