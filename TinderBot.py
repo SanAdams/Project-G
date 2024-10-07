@@ -14,12 +14,12 @@ def safe_get_element_text(by:By, value:str):
     except NoSuchElementException:
         return ""
 
-# def safe_get_element(by:By, value:str):
-#     try:
-#         element = driver.find_element(by, value)
-#         return element
-#     except NoSuchElementException:
-#         return None
+def safe_get_element(by:By, value:str):
+    try:
+        element = driver.find_element(by, value)
+        return element
+    except NoSuchElementException:
+        return None
 
 def open_profile():
     body = driver.find_element(By.TAG_NAME, 'body')
@@ -40,8 +40,27 @@ def next_profile():
     return
 
 def scrape_relationship_type():
-    relationship_type = safe_get_element_text(By.XPATH, '//*[@id="q1029118820"]/div/div[1]/div/main/div[1]/div/div/div/div[1]/div[1]/div/div[2]/div[4]/div/div/div/div')
+    relationship_type = safe_get_element_text(By.XPATH, '//div[@class="Typs(subheading-1) CenterAlign"]')
     return relationship_type
+
+def scrape_lifestyle():
+    basics_container = safe_get_element(By.XPATH, '//h2[text()="Basics"]/following-sibling::div[1]')
+    return
+
+def scrape_basics():    
+    pass
+
+def scrape_interests():
+    pass
+
+def scrape_top_spotify_artists():
+    pass
+
+def scrape_anthem():
+    pass
+
+def scrape_languages():
+    pass
 
 if __name__ == '__main__':
     NUM_PROFILES = 1
@@ -59,6 +78,5 @@ if __name__ == '__main__':
 
     open_profile()
     time.sleep(1)
-    next_profile()
-
-
+    print(scrape_relationship_type())
+    
