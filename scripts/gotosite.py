@@ -6,12 +6,13 @@ import os
 options = Options()
 options.add_experimental_option("debuggerAddress", "localhost:9222")
 CHROMEDRIVER_PATH = os.environ['CHROMEDRIVER_PATH']
+# chromedriver_path = os.getenv('CHROMEDRIVER_PATH')
 
 # Path to chromedriver.exe
-service = Service("CHROMEDRIVER_PATH")
+service = Service(CHROMEDRIVER_PATH)
 
 # Initialize WebDriver with Service and Options
-driver = webdriver.Chrome(service, options)
+driver = webdriver.Chrome(options, service)
 
 sites = ["Bumble", "Tinder"]
 reformatted_sites = ', '.join(sites) 
