@@ -1,5 +1,6 @@
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.chrome.service import Service
@@ -15,44 +16,35 @@ def safe_get_element_text(by: By, value: str):
     except NoSuchElementException:
         return ""
 
-# def safe_get_element(by:By, value:str):
-#     try:
-#         element = driver.find_element(by, value)
-#         return element
-#     except NoSuchElementException:
-#         return None
-
+def safe_get_element(by:By, value:str):
+    try:
+        element = driver.find_element(by, value)
+        return element
+    except NoSuchElementException:
+        return None
 
 def open_profile():
-    open_profile_button = driver.find_element(
-        By.XPATH, '//*[@id="q1029118820"]/div/div[1]/div/main/div[1]/div/div/div/div[1]/div[1]/div/div[2]/div[3]/div/div/div/div/div[1]/button')
-    open_profile_button.click()
+    body = driver.find_element(By.TAG_NAME, 'body')
+    body.send_keys(Keys.ARROW_UP)
     return
-
 
 def scrape_name():
-    name = driver.find_element(
-        By.XPATH, '//*[@id="q1029118820"]/div/div[1]/div/main/div[1]/div/div/div/div[1]/div[1]/div/div[2]/div[1]/div/div[1]/div[1]/h1/span[1]')
+    name = driver.find_element(By.XPATH, '//span[@class="Pend(8px)"]').text
     return name
 
-
 def scrape_age():
-    age = int(driver.find_element(
-        By.XPATH, '//*[@id="q1029118820"]/div/div[1]/div/main/div[1]/div/div/div/div[1]/div[1]/div/div[2]/div[1]/div/div[1]/div[1]/h1/span[2]'))
-    return
-
+    age = driver.find_element(By.XPATH, '//span[@class="Whs(nw) Typs(display-2-strong)"]').text
+    return int(age)
 
 def next_profile():
-    pass_button = driver.find_element(
-        By.XPATH, '//*[@id="q1029118820"]/div/div[1]/div/main/div[1]/div/div/div/div[1]/div[2]/div/div/div[2]/button')
+    pass_button = driver.find_element(By.XPATH, '//div[@class="gamepad-button-wrapper Mx(a) Fxs(0) Sq(70px) Sq(60px)--s"][1]')
     pass_button.click()
     return
 
 
 def scrape_relationship_type():
-    relationship_type = safe_get_element_text(
-        By.XPATH, '//*[@id="q1029118820"]/div/div[1]/div/main/div[1]/div/div/div/div[1]/div[1]/div/div[2]/div[4]/div/div/div/div')
-    return relationship_type
+  relationship_type = safe_get_element_text(By.XPATH, '//div[@class="Typs(subheading-1) CenterAlign"]')
+  return relationship_type
 
 def scrape_basics():
     # Make default value of any key a ""
@@ -83,6 +75,9 @@ def scrape_basics():
 def scrape_lifestyle():
     lifestlye_attributed = {lambda: ""}
     
+def scrape_basics():    
+    pass
+
 def scrape_interests():
     pass
 
@@ -94,7 +89,9 @@ def scrape_anthem():
 
 def scrape_languages():
     pass
+
 #TODO: Change the time.sleep waits into explicit waits from selenium
+
 if __name__ == '__main__':
     NUM_PROFILES = 1
 
@@ -112,6 +109,6 @@ if __name__ == '__main__':
 
     user = DatingAppUser.DatingAppUser()
 
-    # for i in range(NUM_PROFILES):
-    #     open_profile()
-    #     pass
+    open_profile()
+    time.sleep(1)
+    print(scrape_relationship_type())
