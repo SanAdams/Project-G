@@ -34,6 +34,7 @@ class DatingAppUser:
         self.time_scraped = 0
         self.flavor_text = []
         self.residential_location = ""
+        self.vaccination_status = ""
 
     name: str
     age: int
@@ -67,4 +68,6 @@ class DatingAppUser:
     time_scraped: int 
     flavor_text: List[str]
     residential_location: str
+    vaccination_status: str
+
 
