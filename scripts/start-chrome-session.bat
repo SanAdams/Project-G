@@ -1,16 +1,16 @@
 @echo off
 
-title Testing-CMD-Window
+title TestCMD
 echo Starting chrome session...
 
 :: Open chrome in debugging mode
-start "" "C:\Program Files\Google\Chrome\Application\chrome.exe" --remote-debugging-port=9222
+start "" "..\BE\dependencies\chrome-win64\chrome.exe" --remote-debugging-port=9222
 
-:: Wait a bit to allow Chrome to start
-timeout /t 2 >nul
+:: Wait for chrome to start up
+"%systemroot%\System32\timeout.exe" /t 1 >nul
 
 :: Bring cmd back to foreground
-powershell -command "(new-object -comobject wscript.shell).AppActivate('Testing-CMD-Window') > $nul"
+"%systemroot%\System32\WindowsPowerShell\v1.0\powershell.exe" -command "(new-object -comobject wscript.shell).AppActivate('TestCMD') > $nul"
 
 :: Open python script
 python gotosite.py
