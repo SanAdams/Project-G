@@ -6,7 +6,7 @@ options = Options()
 options.add_experimental_option("debuggerAddress", "localhost:9222")
 
 # Path to chromedriver.exe
-service = Service("D:/FUNSIES/Project G/chromedriver-win64/chromedriver.exe")
+service = Service("../BE/dependencies/chromedriver-win64/chromedriver.exe")
 
 # Initialize WebDriver with Service and Options
 driver = webdriver.Chrome(options, service)
