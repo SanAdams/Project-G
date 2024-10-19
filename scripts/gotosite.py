@@ -9,7 +9,7 @@ options.add_experimental_option("debuggerAddress", "localhost:9222")
 service = Service("D:/FUNSIES/Project G/chromedriver-win64/chromedriver.exe")
 
 # Initialize WebDriver with Service and Options
-driver = webdriver.Chrome(service=service, options=options)
+driver = webdriver.Chrome(options, service)
 
 sites = ["Bumble", "Tinder"]
 reformatted_sites = ', '.join(sites) 
