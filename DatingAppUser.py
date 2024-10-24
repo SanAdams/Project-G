@@ -6,7 +6,7 @@ class DatingAppUser:
         self.age: int = None
         self.profession: str = ""
         self.education: str = ""
-        self.height: int = ""
+        self.height: str = ""
         self.physical_activity_frequency: str = "" 
         self.education_level: str = ""
         self.drinking_frequency: str = ""
