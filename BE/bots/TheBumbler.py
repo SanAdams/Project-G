@@ -1,3 +1,10 @@
+import sys
+from pathlib import Path
+
+# Add the project directory to system path
+project_root = Path(__file__).resolve().parents[2]
+sys.path.append(str(project_root))
+
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
