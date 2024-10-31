@@ -1,4 +1,4 @@
 tests/
-.env/
+.env
 notes/
 __pycache__

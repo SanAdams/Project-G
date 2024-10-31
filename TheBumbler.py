@@ -5,7 +5,12 @@ from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.chrome.service import Service
 import time
-import DatingAppUser
+from DatingAppUser import DatingAppUser
+from DBUtils.UserDAO import transfer         
+import json 
+import os
+from dotenv import load_dotenv
+ 
 
 def safe_get_element_text(by:By, value:str):
     try:
@@ -187,7 +192,7 @@ if __name__ == '__main__':
     driver = init_driver()
 
     # Make new user to store data
-    user = DatingAppUser.DatingAppUser()
+    user = DatingAppUser()
     NUM_PROFILES = 1
 
     start = time.time()
@@ -195,7 +200,7 @@ if __name__ == '__main__':
 
     for profile in range(NUM_PROFILES):
         bumbleUsers = []
-        user = DatingAppUser.DatingAppUser()
+        user = DatingAppUser()
         user.dating_app = "Bumble"
         card = 0
 
@@ -259,3 +264,6 @@ if __name__ == '__main__':
     for bumbler in bumbleUsers:
         for attr, value in vars(bumbler).items():
             print(f"{attr}: {value}")
+
+    user_data_json = json.dumps(user.__dict__)
+    
