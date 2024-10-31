@@ -10,7 +10,7 @@ from collections import defaultdict
 import os
 import time
 import DatingAppUser
-
+from dotenv import load_dotenv
 
 def safe_get_element_text(by: By, value: str):
     try:
@@ -175,6 +175,7 @@ def scrape_languages():
 
 
 if __name__ == '__main__':
+    load_dotenv()
     NUM_PROFILES = 1
 
     options = Options()
@@ -193,6 +194,9 @@ if __name__ == '__main__':
 
     open_profile()
     time.sleep(1)
+    basics = scrape_basics()
     pizza = scrape_lifestyle()
     for key, value in pizza.items():
+        print(f"{key}: {value}")
+for key, value in basics.items():
         print(f"{key}: {value}")
