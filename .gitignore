@@ -2,3 +2,4 @@ tests/
 .env
 notes/
 __pycache__
+dependencies/

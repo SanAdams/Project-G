@@ -4,6 +4,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.chrome.service import Service
+import os
 import time
 from DatingAppUser import DatingAppUser
 from DBUtils.UserDAO import transfer         
@@ -12,41 +13,51 @@ import os
 from dotenv import load_dotenv
  
 
-def safe_get_element_text(by:By, value:str):
+
+def safe_get_element_text(by: By, value: str):
     try:
         element = driver.find_element(by, value)
         return element.text.strip()
     except NoSuchElementException:
         return ""
-    
-def safe_get_element(by:By, value:str):
+
+
+def safe_get_element(by: By, value: str):
     try:
         element = driver.find_element(by, value)
         return element
     except NoSuchElementException:
         return None
-    
+
+
 def scrape_name_card():
-    name = safe_get_element_text(By.XPATH, '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[1]/article/div[1]/div[1]/article/div[2]/section/header/h1/span[1]')
-    age = safe_get_element_text(By.XPATH, '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[1]/article/div[1]/div[1]/article/div[2]/section/header/h1/span[2]').replace(", " , "")
-    profession = safe_get_element_text(By.CLASS_NAME, 'encounters-story-profile__occupation')
+    name = safe_get_element_text(
+        By.XPATH, '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[1]/article/div[1]/div[1]/article/div[2]/section/header/h1/span[1]')
+    age = safe_get_element_text(
+        By.XPATH, '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[1]/article/div[1]/div[1]/article/div[2]/section/header/h1/span[2]').replace(", ", "")
+    profession = safe_get_element_text(
+        By.CLASS_NAME, 'encounters-story-profile__occupation')
+    age = int(age)
     return (name, age, profession)
 
+
 def scrape_bio_card():
-    attribute_list_element = driver.find_element(By.XPATH, '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[1]/article/div[1]/div[2]/article/div/section/div/ul')
-    attribute_images_containers = attribute_list_element.find_elements(By.CLASS_NAME, 'pill__image-box')
+    attribute_list_element = driver.find_element(
+        By.XPATH, '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[1]/article/div[1]/div[2]/article/div/section/div/ul')
+    attribute_images_containers = attribute_list_element.find_elements(
+        By.CLASS_NAME, 'pill__image-box')
     num_attributes = len(attribute_images_containers)
     img_src_map = {
         'height_img_src': 'https://us1.ecdn2.bumbcdn.com/i/big/assets/bumble_lifestyle_badges/normal/web/standard/sz___size__/ic_badge_profileChips_dating_heightv2.png',
         'physical_activity_img_src': 'https://us1.ecdn2.bumbcdn.com/i/big/assets/bumble_lifestyle_badges/normal/web/standard/sz___size__/ic_badge_profileChips_dating_exercisev2.png',
         'education_level_img_src': 'https://us1.ecdn2.bumbcdn.com/i/big/assets/bumble_lifestyle_badges/normal/web/standard/sz___size__/ic_badge_profileChips_dating_educationv2.png',
         'drinking_img_src': 'https://us1.ecdn2.bumbcdn.com/i/big/assets/bumble_lifestyle_badges/normal/web/standard/sz___size__/ic_badge_profileChips_dating_drinkingv2.png',
-        'smoking_img_src':'https://us1.ecdn2.bumbcdn.com/i/big/assets/bumble_lifestyle_badges/normal/web/standard/sz___size__/ic_badge_profileChips_dating_smokingv2.png',
+        'smoking_img_src': 'https://us1.ecdn2.bumbcdn.com/i/big/assets/bumble_lifestyle_badges/normal/web/standard/sz___size__/ic_badge_profileChips_dating_smokingv2.png',
         'weed_img_src': 'https://us1.ecdn2.bumbcdn.com/i/big/assets/bumble_lifestyle_badges/normal/web/standard/sz___size__/ic_badge_profileChips_dating_cannabisv2.png',
         'relationship_img_src': 'https://us1.ecdn2.bumbcdn.com/i/big/assets/bumble_lifestyle_badges/normal/web/standard/sz___size__/ic_badge_profileChips_dating_intentionsv2.png',
         'family_plans_img_src': 'https://us1.ecdn2.bumbcdn.com/i/big/assets/bumble_lifestyle_badges/normal/web/standard/sz___size__/ic_badge_profileChips_dating_familyPlansv2.png',
-        'star_sign_img_src':'https://us1.ecdn2.bumbcdn.com/i/big/assets/bumble_lifestyle_badges/normal/web/standard/sz___size__/ic_badge_profileChips_dating_starSignv2.png',
-        'political_leaning_img_src':'https://us1.ecdn2.bumbcdn.com/i/big/assets/bumble_lifestyle_badges/normal/web/standard/sz___size__/ic_badge_profileChips_dating_Politicsv2.png',
+        'star_sign_img_src': 'https://us1.ecdn2.bumbcdn.com/i/big/assets/bumble_lifestyle_badges/normal/web/standard/sz___size__/ic_badge_profileChips_dating_starSignv2.png',
+        'political_leaning_img_src': 'https://us1.ecdn2.bumbcdn.com/i/big/assets/bumble_lifestyle_badges/normal/web/standard/sz___size__/ic_badge_profileChips_dating_Politicsv2.png',
         'religion_img_src': 'https://us1.ecdn2.bumbcdn.com/i/big/assets/bumble_lifestyle_badges/normal/web/standard/sz___size__/ic_badge_profileChips_dating_religionv2.png',
         'gender_img_src': 'https://us1.ecdn2.bumbcdn.com/i/big/assets/bumble_lifestyle_badges/normal/web/standard/sz___size__/ic_badge_profileChips_dating_genderv2.png',
     }
@@ -54,25 +65,29 @@ def scrape_bio_card():
     height = physical_activity_frequency = education_level = drinking_frequency = ""
     smoking_frequency = weed_smoking_frequency = relationship_goals = family_plans = ""
     star_sign = political_leaning = religion = gender = ""
-    bio = safe_get_element_text(By.XPATH, '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[1]/article/div[1]/div[2]/article/div/section/div/p')
-    
-    # Assign the attribute the right value 
+    bio = safe_get_element_text(
+        By.XPATH, '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[1]/article/div[1]/div[2]/article/div/section/div/p')
+
+    # Assign the attribute the right value
     for i in range(num_attributes):
-        current_image_container = attribute_images_containers[i].find_element(By.CLASS_NAME, 'pill__image')
+        current_image_container = attribute_images_containers[i].find_element(
+            By.CLASS_NAME, 'pill__image')
         current_image_src = current_image_container.get_attribute('src')
 
         if current_image_src == img_src_map['height_img_src']:
             height = current_image_container.get_attribute('alt')
         elif current_image_src == img_src_map['physical_activity_img_src']:
-            physical_activity_frequency = current_image_container.get_attribute('alt')
+            physical_activity_frequency = current_image_container.get_attribute(
+                'alt')
         elif current_image_src == img_src_map['education_level_img_src']:
             education_level = current_image_container.get_attribute('alt')
-        elif current_image_src == img_src_map['drinking_img_src']:  
+        elif current_image_src == img_src_map['drinking_img_src']:
             drinking_frequency = current_image_container.get_attribute('alt')
         elif current_image_src == img_src_map['smoking_img_src']:
             smoking_frequency = current_image_container.get_attribute('alt')
         elif current_image_src == img_src_map['weed_img_src']:
-            weed_smoking_frequency = current_image_container.get_attribute('alt')
+            weed_smoking_frequency = current_image_container.get_attribute(
+                'alt')
         elif current_image_src == img_src_map['relationship_img_src']:
             relationship_goals = current_image_container.get_attribute('alt')
         elif current_image_src == img_src_map['family_plans_img_src']:
@@ -85,21 +100,23 @@ def scrape_bio_card():
             religion = current_image_container.get_attribute('alt')
         elif current_image_src == img_src_map['gender_img_src']:
             gender = current_image_container.get_attribute('alt')
- 
+
     return(
         bio, height, physical_activity_frequency,
         education_level, drinking_frequency,
-        smoking_frequency, gender, 
+        smoking_frequency, gender,
         weed_smoking_frequency, relationship_goals,
         family_plans, star_sign,
         political_leaning, religion
     )
+
 
 def determine_location_type(location: str):
     if "Lives in" in location:
         return "residential"
     else:
         return "home_town"
+
 
 def clean_location_text(location: str):
     location_type = determine_location_type(location)
@@ -111,35 +128,42 @@ def clean_location_text(location: str):
         location = location[12:length-4]
     return location
 
+
 def scrape_location_card():
-  
+
     current_location = safe_get_element(By.CLASS_NAME, 'location-widget__town')
     if current_location:
         current_location = current_location.text
-    location_widget_element = safe_get_element(By.CLASS_NAME, 'location-widget__info')
+    location_widget_element = safe_get_element(
+        By.CLASS_NAME, 'location-widget__info')
     home_town = ""
-    residential_location = "" 
+    residential_location = ""
 
-    if location_widget_element: 
-        location_widget_pills= location_widget_element.find_elements(By.CLASS_NAME, 'location-widget__pill')
+    if location_widget_element:
+        location_widget_pills = location_widget_element.find_elements(
+            By.CLASS_NAME, 'location-widget__pill')
         if len(location_widget_pills) > 1:
-            residential_location = clean_location_text(location_widget_pills[0].text)
+            residential_location = clean_location_text(
+                location_widget_pills[0].text)
             home_town = clean_location_text(location_widget_pills[1].text)
         elif len(location_widget_pills) == 1:
             if "Lives in" in location_widget_pills[0].text:
-                residential_location = clean_location_text(location_widget_pills[0].text)
+                residential_location = clean_location_text(
+                    location_widget_pills[0].text)
             else:
                 home_town = clean_location_text(location_widget_pills[0].text)
 
-    try: 
-        top_spotify_artists_list = driver.find_elements(By.CLASS_NAME, 'spotify-widget__artist')
+    try:
+        top_spotify_artists_list = driver.find_elements(
+            By.CLASS_NAME, 'spotify-widget__artist')
         num_artists = len(top_spotify_artists_list)
         top_spotify_artists = []
-        for i in range (num_artists):
-            top_spotify_artists.append(top_spotify_artists_list[i].text.strip())
+        for i in range(num_artists):
+            top_spotify_artists.append(
+                top_spotify_artists_list[i].text.strip())
     except NoSuchElementException:
-            top_spotify_artists = []
-    
+        top_spotify_artists = []
+
     return (current_location, home_town, residential_location, top_spotify_artists)
 
 def scrape_flavor_cards(bio_present: bool):
@@ -160,7 +184,7 @@ def scrape_flavor_cards(bio_present: bool):
 
 def filter_ptags(ptags, class_name):
     return [p for p in ptags if class_name == p.get_attribute('class')]
-    
+
 
 def scroll_down():
     body = driver.find_element(By.TAG_NAME, 'body')
@@ -168,8 +192,10 @@ def scroll_down():
     return
 
 def next_profile():
-    buttons_container = driver.find_element(By.XPATH, '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[2]/div/div[2]/div')
-    buttons_list = buttons_container.find_elements(By.CLASS_NAME, 'encounters-controls__action')
+    buttons_container = driver.find_element(
+        By.XPATH, '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[2]/div/div[2]/div')
+    buttons_list = buttons_container.find_elements(
+        By.CLASS_NAME, 'encounters-controls__action')
     if len(buttons_list) == 4:
         pass_button = buttons_list[1]
     else:
@@ -180,8 +206,10 @@ def init_driver():
     options = Options()
     options.add_experimental_option("debuggerAddress", "localhost:9222")
 
+    chromedriver_path = os.getenv('CHROMEDRIVER_PATH')
+
     # Path to chromedriver.exe
-    service = Service("D:/FUNSIES/Project G/chromedriver-win64/chromedriver.exe")
+    service = Service(chromedriver_path)
 
     # Initialize WebDriver with Service and ChromeOptions
     driver = webdriver.Chrome(service, options)
@@ -217,11 +245,15 @@ if __name__ == '__main__':
         time.sleep(sleep)
         bio_card_data = []
         bio_card_data = scrape_bio_card()
-        user.bio, user.height, user.physical_activity_frequency = bio_card_data[0], bio_card_data[1], bio_card_data[2]
-        user.education_level, user.drinking_frequency, user.smoking_frequency = bio_card_data[3], bio_card_data[4], bio_card_data[5]
-        user.gender, user.weed_smoking_frequency, user.relationship_goals = bio_card_data[6], bio_card_data[7], bio_card_data[8]
-        user.family_plans, user.star_sign, user.political_leaning, user.religion = bio_card_data[9],bio_card_data[10],bio_card_data[11],bio_card_data[12]
-        
+        user.bio, user.height, user.physical_activity_frequency = bio_card_data[
+            0], bio_card_data[1], bio_card_data[2]
+        user.education_level, user.drinking_frequency, user.smoking_frequency = bio_card_data[
+            3], bio_card_data[4], bio_card_data[5]
+        user.gender, user.weed_smoking_frequency, user.relationship_goals = bio_card_data[
+            6], bio_card_data[7], bio_card_data[8]
+        user.family_plans, user.star_sign, user.political_leaning, user.religion = bio_card_data[
+            9], bio_card_data[10], bio_card_data[11], bio_card_data[12]
+
         if user.bio:
             has_bio = True
         else:
@@ -229,9 +261,11 @@ if __name__ == '__main__':
      
         scroll_down()
 
-        album_containter = driver.find_element(By.XPATH, '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[1]/article/div[1]')
+        album_containter = driver.find_element(
+            By.XPATH, '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[1]/article/div[1]')
         ptags = album_containter.find_elements(By.TAG_NAME, 'p')
-        current_location = album_containter.find_element(By.CLASS_NAME, 'location-widget__town')
+        current_location = album_containter.find_element(
+            By.CLASS_NAME, 'location-widget__town')
 
         # If there are only cards with 2 pictures, scroll past them
         if len(ptags) == 1:
@@ -257,10 +291,10 @@ if __name__ == '__main__':
         user.time_scraped = int(time.time())
         bumbleUsers.append(user)
         # next_profile()
-   
+
     end = time.time()
     print(f"It took {(end-start)} seconds to scrape {NUM_PROFILES} profiles")
-    
+
     for bumbler in bumbleUsers:
         for attr, value in vars(bumbler).items():
             print(f"{attr}: {value}")
