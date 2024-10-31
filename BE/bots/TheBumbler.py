@@ -75,8 +75,7 @@ def scrape_bio_card():
         if current_image_src == img_src_map['height_img_src']:
             height = current_image_container.get_attribute('alt')
         elif current_image_src == img_src_map['physical_activity_img_src']:
-            physical_activity_frequency = current_image_container.get_attribute(
-                'alt')
+            physical_activity_frequency = current_image_container.get_attribute('alt')
         elif current_image_src == img_src_map['education_level_img_src']:
             education_level = current_image_container.get_attribute('alt')
         elif current_image_src == img_src_map['drinking_img_src']:
@@ -269,7 +268,6 @@ if __name__ == '__main__':
         # If there are only cards with 2 pictures, scroll past them
         if len(ptags) == 1:
             while not current_location.is_displayed():
-             
                 scroll_down()
                 time.sleep(sleep)
 
