@@ -2,4 +2,4 @@ tests/
 .env/
 notes/
 __pycache__
-BE/dependencies/chrome-win64
+dependencies/
