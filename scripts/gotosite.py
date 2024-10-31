@@ -9,7 +9,7 @@ CHROMEDRIVER_PATH = os.environ['CHROMEDRIVER_PATH']
 # chromedriver_path = os.getenv('CHROMEDRIVER_PATH')
 
 # Path to chromedriver.exe
-service = Service(CHROMEDRIVER_PATH)
+service = Service("../BE/dependencies/chromedriver-win64/chromedriver.exe")
 
 # Initialize WebDriver with Service and Options
 driver = webdriver.Chrome(options, service)
