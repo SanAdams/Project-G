@@ -193,6 +193,8 @@ def next_profile():
         By.XPATH, '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[2]/div/div[2]/div')
     buttons_list = buttons_container.find_elements(
         By.CLASS_NAME, 'encounters-controls__action')
+    
+    # Handle the case where the backtrack button is not interactable
     if len(buttons_list) == 4:
         pass_button = buttons_list[1]
     else:
