@@ -7,12 +7,10 @@ from selenium.webdriver.chrome.service import Service
 import os
 import time
 from DatingAppUser import DatingAppUser
-from DBUtils.UserDAO import transfer         
+from BE.db.tests.DBUtils.UserDAO import transfer         
 import json 
-import os
 from dotenv import load_dotenv
  
-
 
 def safe_get_element_text(by: By, value: str):
     try:
@@ -86,8 +84,7 @@ def scrape_bio_card():
         elif current_image_src == img_src_map['smoking_img_src']:
             smoking_frequency = current_image_container.get_attribute('alt')
         elif current_image_src == img_src_map['weed_img_src']:
-            weed_smoking_frequency = current_image_container.get_attribute(
-                'alt')
+            weed_smoking_frequency = current_image_container.get_attribute('alt')
         elif current_image_src == img_src_map['relationship_img_src']:
             relationship_goals = current_image_container.get_attribute('alt')
         elif current_image_src == img_src_map['family_plans_img_src']:
