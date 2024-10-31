@@ -162,7 +162,7 @@ def scrape_location_card():
 
     return (current_location, home_town, residential_location, top_spotify_artists)
 
-def scrape_flavor_cards(bio_present: bool):
+def scrape_flavor_cards(bio_present):
     album_containter = driver.find_element(By.XPATH, '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[1]/article/div[1]')
     flavor_cards = filter_ptags(album_containter.find_elements(By.TAG_NAME, 'p'), 'encounters-story-about__text')
     num_flavor_cards = len(flavor_cards)
@@ -224,8 +224,10 @@ if __name__ == '__main__':
     start = time.time()
     sleep = 1
 
+    bumbleUsers = []
+
+
     for profile in range(NUM_PROFILES):
-        bumbleUsers = []
         user = DatingAppUser()
         user.dating_app = "Bumble"
         card = 0
@@ -243,19 +245,15 @@ if __name__ == '__main__':
         time.sleep(sleep)
         bio_card_data = []
         bio_card_data = scrape_bio_card()
-        user.bio, user.height, user.physical_activity_frequency = bio_card_data[
-            0], bio_card_data[1], bio_card_data[2]
-        user.education_level, user.drinking_frequency, user.smoking_frequency = bio_card_data[
-            3], bio_card_data[4], bio_card_data[5]
-        user.gender, user.weed_smoking_frequency, user.relationship_goals = bio_card_data[
-            6], bio_card_data[7], bio_card_data[8]
-        user.family_plans, user.star_sign, user.political_leaning, user.religion = bio_card_data[
-            9], bio_card_data[10], bio_card_data[11], bio_card_data[12]
+        
+        attributes = [
+                        "bio", "height", "physical_activity_frequency", "education_level",
+                        "drinking_frequency", "smoking_frequency", "gender", "weed_smoking_frequency",
+                        "relationship_goals", "family_plans", "star_sign", "political_leaning", "religion"
+                     ]
 
-        if user.bio:
-            has_bio = True
-        else:
-            has_bio = False
+        for i, attr in enumerate(attributes):
+            setattr(user, attr, bio_card_data[i])
      
         scroll_down()
 
@@ -273,7 +271,7 @@ if __name__ == '__main__':
 
         time.sleep(sleep)
 
-        user.flavor_text = scrape_flavor_cards(has_bio)
+        user.flavor_text = scrape_flavor_cards(user.bio)
 
         # If there is at least one flavor card with text
         # and some number of cards with 2 pictures, scrape then scroll past them
@@ -287,6 +285,8 @@ if __name__ == '__main__':
 
         user.time_scraped = int(time.time())
         bumbleUsers.append(user)
+        user_data_json = json.dumps(user.__dict__)
+        print(user_data_json)
         # next_profile()
 
     end = time.time()
@@ -296,5 +296,5 @@ if __name__ == '__main__':
         for attr, value in vars(bumbler).items():
             print(f"{attr}: {value}")
 
-    user_data_json = json.dumps(user.__dict__)
+    
     
