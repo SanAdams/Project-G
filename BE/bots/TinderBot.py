@@ -4,10 +4,13 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 from collections import defaultdict
+import os
 import time
 import DatingAppUser
-
+from dotenv import load_dotenv
 
 def safe_get_element_text(by: By, value: str):
     try:
@@ -16,83 +19,163 @@ def safe_get_element_text(by: By, value: str):
     except NoSuchElementException:
         return ""
 
-def safe_get_element(by:By, value:str):
+
+def safe_get_element(by: By, value: str):
     try:
         element = driver.find_element(by, value)
         return element
     except NoSuchElementException:
         return None
 
+
 def open_profile():
     body = driver.find_element(By.TAG_NAME, 'body')
     body.send_keys(Keys.ARROW_UP)
     return
 
+
 def scrape_name():
     name = driver.find_element(By.XPATH, '//span[@class="Pend(8px)"]').text
     return name
 
+
 def scrape_age():
-    age = driver.find_element(By.XPATH, '//span[@class="Whs(nw) Typs(display-2-strong)"]').text
+    age = driver.find_element(
+        By.XPATH, '//span[@class="Whs(nw) Typs(display-2-strong)"]').text
     return int(age)
 
+
 def next_profile():
-    pass_button = driver.find_element(By.XPATH, '//div[@class="gamepad-button-wrapper Mx(a) Fxs(0) Sq(70px) Sq(60px)--s"][1]')
+    pass_button = driver.find_element(
+        By.XPATH, '//div[@class="gamepad-button-wrapper Mx(a) Fxs(0) Sq(70px) Sq(60px)--s"][1]')
     pass_button.click()
     return
 
 
 def scrape_relationship_type():
-  relationship_type = safe_get_element_text(By.XPATH, '//div[@class="Typs(subheading-1) CenterAlign"]')
-  return relationship_type
+    relationship_type = safe_get_element_text(
+        By.XPATH, '//div[@class="Typs(subheading-1) CenterAlign"]')
+    return relationship_type
+
 
 def scrape_basics():
-    # Make default value of any key a ""
     basic_attributes = defaultdict(lambda: "")
+
     try:
-        basics_spans = driver.find_elements(By.XPATH, '//h2[text()="Basics"]//following-sibling::div//div//span')
+        # Wait for the "Basics" section to be present
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.XPATH, '//h2[text()="Basics"]'))
+        )
+
+        # Locate the Basics section
+        basics_section = driver.find_element(
+            By.XPATH, '//h2[text()="Basics"]/following-sibling::div'
+        )
+
+        # Find all child div elements inside the Basics section
+        basics_divs = basics_section.find_elements(By.XPATH, './div')
+
+        for div in basics_divs:
+            try:
+                script = """
+                            let texts = [];
+                            let children = arguments[0].childNodes;
+                            for (let i = 0; i < children.length; i++) {
+                                if (children[i].nodeType === Node.TEXT_NODE || children[i].nodeType === Node.ELEMENT_NODE) {
+                                    texts.push(children[i].textContent.trim());
+                                }
+                            }
+                            return texts;
+                        """
+
+                attribute_value = driver.execute_script(
+                    script, div)
+
+                # Store the attribute and its value in the dictionary
+                basic_attributes[attribute_value[0]
+                                 ] = attribute_value[2]
+
+            except NoSuchElementException:
+                # Debugging
+                print(
+                    f"Couldn't find expected elements inside this div: {div.get_attribute('outerHTML')}")
+                continue
+
     except NoSuchElementException:
-        return basic_attributes
-    # Match the attribute text to the attribute
-    if basics_spans:  
-        for span in basics_spans:
-            if span.text.strip() == "Education":
-                basic_attributes['education_level'] = span.find_element(By.XPATH, './following-sibling::div').text
-            if span.text.strip() == "Love Style":
-                basic_attributes['love_language'] = span.find_element(By.XPATH, './following-sibling::div').text
-            if span.text.strip() == "Communication Style":
-                basic_attributes['communication_style'] = span.find_element(By.XPATH, './following-sibling::div').text
-            if span.text.strip() == "Zodiac":
-                basic_attributes['star_sign'] = span.find_element(By.XPATH, './following-sibling::div').text
-            if span.text.strip() == "Family Plans":
-                basic_attributes['family_plans'] = span.find_element(By.XPATH, './following-sibling::div').text
-            if span.text.strip() == "COVID Vaccine":
-                basic_attributes['vaccination_status'] = span.find_element(By.XPATH, './following-sibling::div').text
-            if span.text.strip() == "Personality Type":
-                basic_attributes['personality_type'] = span.find_element(By.XPATH, './following-sibling::div').text
+        print("No elements found for basics.")
+
     return basic_attributes
 
+
 def scrape_lifestyle():
-    lifestlye_attributed = {lambda: ""}
-    
-def scrape_basics():    
-    pass
+    lifestyle_attributes = defaultdict(lambda: "")
+    try:
+        # Wait for the "lifestyle" section to be present
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located(
+                (By.XPATH, '//h2[text()="Lifestyle"]'))
+        )
+
+        # Locate the lifestyle section
+        lifestyle_section = driver.find_element(
+            By.XPATH, '//h2[text()="Lifestyle"]/following-sibling::div'
+        )
+
+        # Find all child div elements inside the lifestyle section
+        lifestyle_divs = lifestyle_section.find_elements(By.XPATH, './div')
+
+        for div in lifestyle_divs:
+            try:
+                script = """
+                            let texts = [];
+                            let children = arguments[0].childNodes;
+                            for (let i = 0; i < children.length; i++) {
+                                if (children[i].nodeType === Node.TEXT_NODE || children[i].nodeType === Node.ELEMENT_NODE) {
+                                    texts.push(children[i].textContent.trim());
+                                }
+                            }
+                            return texts;
+                        """
+
+                attribute_value = driver.execute_script(
+                    script, div)
+
+                # Store the attribute and its value in the dictionary
+                lifestyle_attributes[attribute_value[0]
+                                     ] = attribute_value[2]
+
+            except NoSuchElementException:
+                # Debugging
+                print(
+                    f"Couldn't find expected elements inside this div: {div.get_attribute('outerHTML')}")
+                continue
+
+    except NoSuchElementException:
+        print("No elements found for lifestyle.")
+
+    return lifestyle_attributes
+
 
 def scrape_interests():
     pass
 
+
 def scrape_top_spotify_artists():
     pass
+
 
 def scrape_anthem():
     pass
 
+
 def scrape_languages():
     pass
 
-#TODO: Change the time.sleep waits into explicit waits from selenium
+# TODO: Change the time.sleep waits into explicit waits from selenium
+
 
 if __name__ == '__main__':
+    load_dotenv()
     NUM_PROFILES = 1
 
     options = Options()
@@ -111,4 +194,9 @@ if __name__ == '__main__':
 
     open_profile()
     time.sleep(1)
-    print(scrape_relationship_type())
+    basics = scrape_basics()
+    pizza = scrape_lifestyle()
+    for key, value in pizza.items():
+        print(f"{key}: {value}")
+for key, value in basics.items():
+        print(f"{key}: {value}")
