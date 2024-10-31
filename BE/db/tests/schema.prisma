@@ -1,0 +1,63 @@
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator db {
+  provider             = "prisma-client-py"
+  interface            = "asyncio"
+  recursive_type_depth = 5
+}
+
+model DatingAppUser {
+  id                          BigInt @id @default(autoincrement())
+  name                        String
+  age                         Int
+  profession                  String?
+  education                   String?
+  height                      String?
+  physical_activity_frequency String?
+  education_level             String?
+  drinking_frequency          String?
+  smoking_frequency           String?
+  gender                      String
+  weed_smoking_frequency      String?
+  relationship_type           String?
+  relationship_goals          String?
+  family_plans                String?
+  star_sign                   String?
+  political_leaning           String?
+  religion                    String?
+  current_location            String
+  dating_app                  String
+  top_spotify_artists         String?
+  anthem                      String?
+  interests                   String?
+  pets                        String?
+  communication_style         String?
+  love_language               String?
+  sleeping_habits             String?
+  dietary_preference          String?
+  bio                         String?
+  home_town                   String?
+  time_scraped                DateTime @default(now())
+  residential_location        String?
+  answers                     Answer[] 
+}
+
+model Question{
+  id         BigInt @id
+  question   String
+  dating_app String
+  answers    Answer[]
+}
+
+model Answer{
+  user         DatingAppUser @relation(fields: [user_id], references: [id])
+  question     Question @relation(fields: [question_id], references: [id])
+  question_id  BigInt
+  user_id      BigInt
+  answer       String
+
+  @@id([user_id, question_id])
+}
