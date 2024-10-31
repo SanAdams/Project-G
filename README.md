@@ -3,7 +3,7 @@ README
 Collecting data from dating websites, making it look pretty and understandable
 ![Project G Logo](https://github.com/user-attachments/assets/7f1f8c8e-d6ea-4d79-9c27-a9158b109648)
 
-# CURRENT SETUP PROCESS (10/19/24):
+# CURRENT SETUP PROCESS (10/19/24) THIS IS OUTDATED:
 1. **Download selenium**, you can use pip if you have python installed:
     
     `pip install selenium`
