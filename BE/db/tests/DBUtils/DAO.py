@@ -8,5 +8,11 @@ class DAO:
     env_path: str
     def __init__(self):
         db = Prisma()
-    async def transfer(data):
-        
+    async def create(data):
+        pass
+    async def read():
+        pass
+    async def update():
+        pass
+    async def delete():
+        pass
