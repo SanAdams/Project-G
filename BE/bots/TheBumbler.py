@@ -253,22 +253,20 @@ if __name__ == '__main__':
         bio_card_data = []
         bio_card_data = scrape_bio_card()
         
-        attributes = [
+        bio_attributes = [
                         "bio", "height", "physical_activity_frequency", "education_level",
                         "drinking_frequency", "smoking_frequency", "gender", "weed_smoking_frequency",
                         "relationship_goals", "family_plans", "star_sign", "political_leaning", "religion"
                      ]
 
-        for i, attr in enumerate(attributes):
+        for i, attr in enumerate(bio_attributes):
             setattr(user, attr, bio_card_data[i])
      
         scroll_down()
 
-        album_containter = driver.find_element(
-            By.XPATH, '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[1]/article/div[1]')
+        album_containter = driver.find_element(By.XPATH, '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[1]/article/div[1]')
         ptags = album_containter.find_elements(By.TAG_NAME, 'p')
-        current_location = album_containter.find_element(
-            By.CLASS_NAME, 'location-widget__town')
+        current_location = album_containter.find_element(By.CLASS_NAME, 'location-widget__town')
 
         # If there are only cards with 2 pictures, scroll past them
         if len(ptags) == 1:
