@@ -1,4 +1,22 @@
-from typing import List
+from typing import List, Optional
+from enum import Enum
+from datetime import datetime
+from __future__ import annotations
+
+class DatingApp(Enum):
+    BUMBLE = 'bumble'
+    TINDER = 'tinder'
+
+class Gender(Enum):
+    MAN = 'man'
+    WOMAN = 'woman'
+    NON_BINARY = 'non binary'
+    OTHER = 'other'
+
+class Prompt:
+    def __init__(self, question: str, answer: str):  
+        self.question = question
+        self.answer = answer
 
 class DatingAppUser:
     def __init__(self):
@@ -31,45 +49,62 @@ class DatingAppUser:
         self.dietary_preference: str = ""
         self.bio: str = ""
         self.home_town = ""
-        self.time_scraped = 0
-        self.flavor_text = []
+        self.time_scraped: datetime = None
+        self.prompts: List[Prompt] = []
         self.residential_location = ""
         self.vaccination_status = ""
         self.languages = []
         self.personality_type = ""
 
-    name: str
-    age: int
-    profession: str
-    education: str
-    height: str 
-    physical_activity_frequency: str 
-    education_level: str
-    drinking_frequency: str
-    smoking_frequency:str
-    gender: str
-    weed_smoking_frequency: str
-    relationship_type: str
-    relationship_goals: str
-    family_plans: str
-    star_sign: str
-    political_leaning: str
-    religion: str
-    current_location: str
-    dating_app: str
-    top_spotify_artists: List[str]
-    anthem: str
-    interests: List[str]
-    pets: str
-    communication_style: str
-    love_language: str
-    sleeping_habits: str
-    dietary_preference: str
-    bio: str
-    home_town: str
-    time_scraped: int 
-    flavor_text: List[str]
-    residential_location: str
-    vaccination_status: str
-    languages: List[str]
-    personality_type: str
+# Builder class. Build a user piece by piece or without some pieces
+class DatingAppUserBuilder:
+    def __init__(self, dating_app:str):
+        self.user = DatingAppUser()
+        self.user.dating_app = dating_app
+        self.user.time_scraped = datetime.now()
+
+    def with_name(self, name: str) -> DatingAppUserBuilder:
+        self.user.name = name.strip()
+        return self
+
+    def with_age(self, age: int) -> DatingAppUserBuilder:
+        self.user.age = age
+        return self
+
+    def with_profession(self, profession: str) -> DatingAppUserBuilder:
+        if profession: self.user.profession = profession
+        return self
+
+    def with_location(self, current_location: str, residential_location: str, home_town: str) -> DatingAppUserBuilder:
+        if current_location: self.current_location = current_location
+        if residential_location: self.residential_location = residential_location
+        if home_town: self.home_town = home_town
+        return self
+
+    def add_prompt(self, question: str, answer: str) -> DatingAppUserBuilder:
+        prompt = Prompt(question, answer)
+        self.user.prompts.append(prompt)
+        return self
+    
+    def with_freqeuncies(self, 
+                        physical_activity_frequency,
+                        drinking_frequency,
+                        smoking_frequency, 
+                        weed_smoking_frequency) -> DatingAppUserBuilder:
+
+        if physical_activity_frequency: self.user.physical_activity_frequency = physical_activity_frequency
+        if drinking_frequency: self.user.drinking_frequency = drinking_frequency
+        if smoking_frequency: self.user.smoking_frequency = smoking_frequency
+        if weed_smoking_frequency: self.user.weed_smoking_frequency = weed_smoking_frequency
+        return self
+
+    def add_spotify_artists(self, artist) -> DatingAppUserBuilder:
+        if artist: self.user.top_spotify_artists.append(artist)
+        return self
+
+    def build(self) -> DatingAppUser:
+        if not self.user.name or self.user.age:
+            raise ValueError("Name and Age are required")
+        return self.user
+
+
