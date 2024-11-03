@@ -17,7 +17,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from collections import defaultdict
 import os
 import time
-import BE.bots.DatingAppUser as DatingAppUser
+import BE.DatingAppUser as DatingAppUser
 from dotenv import load_dotenv
 
 def safe_get_element_text(by: By, value: str):

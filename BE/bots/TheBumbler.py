@@ -13,7 +13,7 @@ from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.chrome.service import Service
 import os
 import time
-from DatingAppUser import DatingAppUser
+from BE.DatingAppUser import DatingAppUser
 from BE.db.tests.DBUtils.UserDAO import transfer         
 import json 
 from dotenv import load_dotenv
