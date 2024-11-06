@@ -24,7 +24,7 @@ class DatingAppUser:
         self.age: int = None
         self.profession: str = ""
         self.education: str = ""
-        self.height: int = ""
+        self.height: str = ""
         self.physical_activity_frequency: str = "" 
         self.education_level: str = ""
         self.drinking_frequency: str = ""
@@ -70,6 +70,9 @@ class DatingAppUserBuilder:
     def with_age(self, age: int) -> DatingAppUserBuilder:
         self.user.age = age
         return self
+    
+    def with_height(self, height: str) -> DatingAppUserBuilder:
+        self.user.height = height
 
     def with_profession(self, profession: str) -> DatingAppUserBuilder:
         if profession: self.user.profession = profession
@@ -98,8 +101,12 @@ class DatingAppUserBuilder:
         if weed_smoking_frequency: self.user.weed_smoking_frequency = weed_smoking_frequency
         return self
 
-    def add_spotify_artists(self, artist) -> DatingAppUserBuilder:
+    def add_spotify_artist(self, artist) -> DatingAppUserBuilder:
         if artist: self.user.top_spotify_artists.append(artist)
+        return self
+    
+    def with_anthem(self, anthem: str) -> DatingAppUserBuilder:
+        if anthem: self.user.anthem = anthem
         return self
 
     def build(self) -> DatingAppUser:
