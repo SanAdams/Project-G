@@ -1,8 +1,8 @@
+from __future__ import annotations
 from typing import List
 from enum import Enum
 from datetime import datetime
-from __future__ import annotations
-
+from 
 class DatingApp(Enum):
     BUMBLE = 'bumble'
     TINDER = 'tinder'
@@ -12,7 +12,6 @@ class Gender(Enum):
     WOMAN = 'woman'
     NON_BINARY = 'non binary'
     OTHER = 'other'
-
 
 
 class DatingAppUser:
