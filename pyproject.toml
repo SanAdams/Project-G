@@ -13,5 +13,10 @@ dependencies = [
 ]
 authors = []
 
+[tool.setuptools]
+package-dir = { "" = "backend" }
+
 [tool.setuptools.packages.find]
-where = ["BE/"]
+where = ["backend"]
+include = ["project_g*"]
+exclude = ["project_g.dependencies*"]
