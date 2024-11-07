@@ -18,5 +18,5 @@ package-dir = { "" = "backend" }
 
 [tool.setuptools.packages.find]
 where = ["backend"]
-include = ["project_g*"]
-exclude = ["project_g.dependencies*"]
+include = ["projectg*"]
+exclude = ["projectg.dependencies*"]
