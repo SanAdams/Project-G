@@ -2,3 +2,4 @@
 notes/
 __pycache__
 dependencies/
+*.egg-info
