@@ -1,8 +1,8 @@
+from __future__ import annotations
 from typing import List
 from enum import Enum
 from datetime import datetime
-from __future__ import annotations
-
+from 
 class DatingApp(Enum):
     BUMBLE = 'bumble'
     TINDER = 'tinder'
@@ -13,10 +13,6 @@ class Gender(Enum):
     NON_BINARY = 'non binary'
     OTHER = 'other'
 
-class Prompt:
-    def __init__(self, question: str, answer: str):  
-        self.question = question
-        self.answer = answer
 
 class DatingAppUser:
     def __init__(self):
@@ -24,7 +20,7 @@ class DatingAppUser:
         self.age: int = None
         self.profession: str = ""
         self.education: str = ""
-        self.height: int = ""
+        self.height: str = ""
         self.physical_activity_frequency: str = "" 
         self.education_level: str = ""
         self.drinking_frequency: str = ""
@@ -70,15 +66,18 @@ class DatingAppUserBuilder:
     def with_age(self, age: int) -> DatingAppUserBuilder:
         self.user.age = age
         return self
+    
+    def with_height(self, height: str) -> DatingAppUserBuilder:
+        self.user.height = height
 
     def with_profession(self, profession: str) -> DatingAppUserBuilder:
         if profession: self.user.profession = profession
         return self
 
     def with_location(self, current_location: str, residential_location: str, home_town: str) -> DatingAppUserBuilder:
-        if current_location: self.current_location = current_location
-        if residential_location: self.residential_location = residential_location
-        if home_town: self.home_town = home_town
+        if current_location: self.user.current_location = current_location
+        if residential_location: self.user.residential_location = residential_location
+        if home_town: self.user.home_town = home_town
         return self
 
     def add_prompt(self, question: str, answer: str) -> DatingAppUserBuilder:
@@ -98,12 +97,16 @@ class DatingAppUserBuilder:
         if weed_smoking_frequency: self.user.weed_smoking_frequency = weed_smoking_frequency
         return self
 
-    def add_spotify_artists(self, artist) -> DatingAppUserBuilder:
+    def add_spotify_artist(self, artist) -> DatingAppUserBuilder:
         if artist: self.user.top_spotify_artists.append(artist)
+        return self
+    
+    def with_anthem(self, anthem: str) -> DatingAppUserBuilder:
+        if anthem: self.user.anthem = anthem
         return self
 
     def build(self) -> DatingAppUser:
-        if not self.user.name or self.user.age:
+        if not self.user.name or not self.user.age:
             raise ValueError("Name and Age are required")
         return self.user
 
