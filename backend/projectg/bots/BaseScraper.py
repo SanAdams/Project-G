@@ -1,8 +1,6 @@
 from abc import ABC, abstractmethod
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
-from selenium.webdriver.common.by import By
-from selenium.webdriver.remote.webelement import WebElement
 import time
 
 class BaseScraper(ABC):
@@ -24,25 +22,35 @@ class BaseScraper(ABC):
     def scrape_profile():
         pass
 
-    def safe_get_element_text(self, by: By, value: str) -> str:
-        try:
-            element = self.driver.find_element(by, value)
-            return element.text.strip()
-        except NoSuchElementException:
-            return ""
-
-    def safe_get_element(self, by: By, value: str) -> WebElement:
-        try:
-            element = self.driver.find_element(by, value)
-            return element
-        except NoSuchElementException:
-            return None
-
     def refresh_on_failure(self):
         self.driver.refresh()
         time.sleep(self.wait_for_retry)
 
-    def retry_on_failure():
-        
-        pass
-
+    def handle_errors(self, func):
+        """
+        Decorator for handling common scraping errors
+        """
+        def wrapper(*args, **kwargs):
+            try:
+                return func(*args, **kwargs)
+            except NoSuchElementException as e:
+                return None
+            except TimeoutException as e:
+                return None
+            except Exception as e:
+                return None
+        return wrapper
+    
+    def retry_on_failure(self, func):
+        """
+        Decorator for retrying failed operations
+        """
+        def wrapper(*args, **kwargs):
+            for attempt in range(self.max_retries):
+                try:
+                    return func(*args, **kwargs)
+                except Exception:
+                    if attempt + 1 == self.max_retries:
+                        raise
+                    time.sleep(self.wait_for_retry)
+        return wrapper
