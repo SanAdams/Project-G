@@ -2,7 +2,7 @@ from __future__ import annotations
 from typing import List
 from enum import Enum
 from datetime import datetime
-from 
+from projectg.models.Prompt import Prompt
 class DatingApp(Enum):
     BUMBLE = 'bumble'
     TINDER = 'tinder'
