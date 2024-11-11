@@ -7,7 +7,7 @@ from .config import Config
 from .bots import TinderBot, Bumbler
 
 logging.basicConfig(
-    level = logging.INFO
+    level = logging.INFO,
     format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 
@@ -38,6 +38,16 @@ def run_scraper(website: ScraperType, count: int):
         website: Which website is being scraped?
         count: How many profiles should be scraped?
     """
+
+    if website.lower() == 'bumble':
+        scraper = Bumbler()
+    elif website.lower() == 'tinder':
+        scraper = TinderBot()
+    
+
+    driver = init_driver()
+    for i in range(count):
+        scraper.scrape_profile(driver)
 
 def main():
     import sys
