@@ -5,7 +5,8 @@ from selenium.common.exceptions import NoSuchElementException
 import os
 import time
 from dotenv import load_dotenv
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
+from projectg.models.Prompt import Prompt
 from .BaseScraper import BaseScraper 
  
 class Bumbler(BaseScraper):
@@ -13,6 +14,10 @@ class Bumbler(BaseScraper):
     @BaseScraper.retry_on_failure
     @BaseScraper.handle_errors
     def scrape_name_card(self) -> Optional[Dict[str, Any]]:
+        """
+        Scrapes the first card on bumble: Returns a dictionary of name, age, and profession-- 
+        None for any field not found
+        """
         name = self.driver.find_element(By.XPATH, '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[1]/article/div[1]/div[1]/article/div[2]/section/header/h1/span[1]')
         age = self.driver.find_element(By.XPATH, '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[1]/article/div[1]/div[1]/article/div[2]/section/header/h1/span[2]').replace(", ", "")
         profession = self.driver.find_element(By.CLASS_NAME, 'encounters-story-profile__occupation')
@@ -33,7 +38,11 @@ class Bumbler(BaseScraper):
     @BaseScraper.retry_on_failure
     @BaseScraper.handle_errors
     def scrape_bio_card(self) -> Optional[Dict[str, Any]]:
-
+        """
+        Scrapes the second card on Bumble, returns a dictionary of different attributees found on the card (e.g
+        height, relationionship intent, etc.-- 
+        None for any field not found
+        """
         attribute_list_element = self.driver.find_element(By.XPATH, '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[1]/article/div[1]/div[2]/article/div/section/div/ul')
         attribute_images_containers = attribute_list_element.find_elements(By.CLASS_NAME, 'pill__image-box')
        
@@ -89,8 +98,11 @@ class Bumbler(BaseScraper):
 
     @BaseScraper.retry_on_failure
     @BaseScraper.handle_errors
-    def scrape_location_card(self):
-
+    def scrape_location_card(self) -> Optional[Dict[str, Any]]:
+        """
+        Scrapes last card on bumble, returns a dictionary of attributes (e.g home town, residential location etc. --)
+        None for any field not found
+        """
         current_location = self.driver.find_element(By.CLASS_NAME, 'location-widget__town')
         if current_location:
             current_location = current_location.text
@@ -121,27 +133,27 @@ class Bumbler(BaseScraper):
 
         return attributes
 
-    def scrape_flavor_cards(self, bio_present):
+    def scrape_flavor_cards(self, bio_present: bool) -> List[Prompt]:
         album_containter = self.driver.find_element(By.XPATH, '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[1]/article/div[1]')
         flavor_cards = self.filter_ptags(album_containter.find_elements(By.TAG_NAME, 'p'), 'encounters-story-about__text')
         num_flavor_cards = len(flavor_cards)
-        flavor_texts = []
+        Prompts = []
         
         start = 1 if bio_present else 0
 
         for i in range(start, num_flavor_cards):
-            flavor_texts.append(flavor_cards[i].text.strip())
+            Prompts.append(flavor_cards[i].text.strip())
             self.scroll_down()
             time.sleep(1)
 
-        return flavor_texts
+        return Prompts
 
 
     def filter_ptags(ptags, class_name):
         return [p for p in ptags if class_name == p.get_attribute('class')]
 
 
-    def scroll_down(self):
+    def scroll_down(self) -> bool:
         body = self.driver.find_element(By.TAG_NAME, 'body')
         body.send_keys(Keys.ARROW_DOWN)
         return
@@ -237,14 +249,5 @@ class Bumbler(BaseScraper):
 #         bumbleUsers.append(user)
 #         user_data_json = json.dumps(user.__dict__)
 #         print(user_data_json)
-#         # next_profile()
-
-#     end = time.time()
-#     print(f"It took {(end-start)} seconds to scrape {NUM_PROFILES} profiles")
-
-#     for bumbler in bumbleUsers:
-#         for attr, value in vars(bumbler).items():
-#             print(f"{attr}: {value}")
-
-    
+#         # next_profile()    
     
