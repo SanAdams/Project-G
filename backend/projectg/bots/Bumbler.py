@@ -8,8 +8,9 @@ from dotenv import load_dotenv
 from typing import Optional, Dict, Any, List
 from projectg.models.Prompt import Prompt
 from .BaseScraper import BaseScraper 
- 
+
 class Bumbler(BaseScraper):
+
 
     @BaseScraper.retry_on_failure
     @BaseScraper.handle_errors
@@ -28,13 +29,15 @@ class Bumbler(BaseScraper):
             'age' : age,
             'profession' : profession
         }
-    
+
+
     @BaseScraper.retry_on_failure
     @BaseScraper.handle_errors
-    def scrape_bio(self):
+    def scrape_bio(self) -> Optional[str]:
         bio = self.driver.find_element(By.XPATH, '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[1]/article/div[1]/div[2]/article/div/section/div/p')
         return bio
-   
+
+
     @BaseScraper.retry_on_failure
     @BaseScraper.handle_errors
     def scrape_bio_card(self) -> Optional[Dict[str, Any]]:
@@ -133,6 +136,7 @@ class Bumbler(BaseScraper):
 
         return attributes
 
+
     def scrape_flavor_cards(self, bio_present: bool) -> List[Prompt]:
         album_containter = self.driver.find_element(By.XPATH, '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[1]/article/div[1]')
         flavor_cards = self.filter_ptags(album_containter.find_elements(By.TAG_NAME, 'p'), 'encounters-story-about__text')
@@ -153,10 +157,10 @@ class Bumbler(BaseScraper):
         return [p for p in ptags if class_name == p.get_attribute('class')]
 
 
-    def scroll_down(self) -> bool:
+    def scroll_down(self):
         body = self.driver.find_element(By.TAG_NAME, 'body')
         body.send_keys(Keys.ARROW_DOWN)
-        return
+
 
     def next_profile(self) -> bool:
         buttons_container = self.self.driver.find_element(By.XPATH, '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[2]/div/div[2]/div')
@@ -169,85 +173,11 @@ class Bumbler(BaseScraper):
             pass_button = buttons_list[0]
         pass_button.click()
 
+
     def scrape_profile(self):
         self.scrape_name_card()
         self.scrape_bio_card()
         self.scrape_flavor_cards()
         self.scrape_location_card()
 
-
-
-# if __name__ == '__main__':
-
-#     scraper = Bumbler(driver)
-
-#     # Make new user to store data
-#     user = DatingAppUser()
-#     NUM_PROFILES = 1
-
-#     start = time.time()
-#     sleep = 1
-
-#     bumbleUsers = []
-
-
-#     for profile in range(NUM_PROFILES):
-#         user = DatingAppUser()
-#         user.dating_app = "Bumble"
-#         card = 0
-
-#         time.sleep(sleep)
-#         user.name, user.age, user.profession = scrape_name_card()
-#         scroll_down()
-
-#         # Retry if the scrape failed
-#         if not user.name or not user.age:
-#             print("Scrape failed, refreshing")
-#             driver.refresh()
-#             continue
-
-#         time.sleep(sleep)
-#         bio_card_data = []
-#         bio_card_data = scrape_bio_card()
-        
-#         bio_attributes = [
-#                         "bio", "height", "physical_activity_frequency", "education_level",
-#                         "drinking_frequency", "smoking_frequency", "gender", "weed_smoking_frequency",
-#                         "relationship_goals", "family_plans", "star_sign", "political_leaning", "religion"
-#                      ]
-
-#         for i, attr in enumerate(bio_attributes):
-#             setattr(user, attr, bio_card_data[i])
-     
-#         scroll_down()
-
-#         album_containter = driver.find_element(By.XPATH, '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[1]/article/div[1]')
-#         ptags = album_containter.find_elements(By.TAG_NAME, 'p')
-#         current_location = album_containter.find_element(By.CLASS_NAME, 'location-widget__town')
-
-#         # If there are only cards with 2 pictures, scroll past them
-#         if len(ptags) == 1:
-#             while not current_location.is_displayed():
-#                 scroll_down()
-#                 time.sleep(sleep)
-
-#         time.sleep(sleep)
-
-#         user.flavor_text = scrape_flavor_cards(user.bio)
-
-#         # If there is at least one flavor card with text
-#         # and some number of cards with 2 pictures, scrape then scroll past them
-#         while not current_location.is_displayed():
-         
-#             scroll_down()
-#             time.sleep(sleep)
-
-#         time.sleep(sleep)
-#         user.current_location, user.home_town, user.residential_location, user.top_spotify_artists = scrape_location_card()
-
-#         user.time_scraped = int(time.time())
-#         bumbleUsers.append(user)
-#         user_data_json = json.dumps(user.__dict__)
-#         print(user_data_json)
-#         # next_profile()    
     
