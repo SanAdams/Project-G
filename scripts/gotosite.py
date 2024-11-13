@@ -4,7 +4,7 @@ from selenium.webdriver.chrome.service import Service
 
 options = Options()
 options.add_experimental_option("debuggerAddress", "localhost:9222")
-CHROMEDRIVER_PATH = '../BE/dependencies/chromedriver-win64/chromedriver.exe'
+CHROMEDRIVER_PATH = '../backend/projectg/dependencies/chromedriver-win64/chromedriver.exe'
 
 # Path to chromedriver.exe
 service = Service(CHROMEDRIVER_PATH)

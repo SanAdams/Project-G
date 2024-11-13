@@ -7,7 +7,7 @@ from .config import Config
 from .bots import TinderBot, Bumbler
 
 logging.basicConfig(
-    level = logging.INFO
+    level = logging.INFO,
     format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 
@@ -38,6 +38,28 @@ def run_scraper(website: ScraperType, count: int):
         website: Which website is being scraped?
         count: How many profiles should be scraped?
     """
+
+    # Create a mapping to the class we want, based on input
+    scrapers = {
+        'tinder' : TinderBot,
+        'bumble' : Bumbler
+    }
+    
+    # Get the class
+    scraper_class = scrapers.get(website)
+    
+    driver = init_driver()
+    
+    # Create an instance of the class and pass in driver
+    scraper = scraper_class(driver)
+    
+    for i in range(count):
+        scraper.scrape_profile(driver)
+
+    logger.info(f"Successfully scraped {count} profiles from {website}")
+
+    driver.quit()
+    logger.info("Web driver closed")
 
 def main():
     import sys

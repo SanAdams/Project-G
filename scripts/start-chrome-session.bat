@@ -4,7 +4,7 @@ title TestCMD
 echo Starting chrome session...
 
 :: Open chrome in debugging mode
-start "" "..\BE\dependencies\chrome-win64\chrome.exe" --remote-debugging-port=9222
+start "" "..\backend\projectg\dependencies\chrome-win64\chrome.exe" --remote-debugging-port=9222
 
 :: Check if Chrome is loaded
 :checkChrome
