@@ -12,34 +12,38 @@ from .BaseScraper import BaseScraper
 class Bumbler(BaseScraper):
 
 
-    @BaseScraper.retry_on_failure
-    @BaseScraper.handle_errors
     def scrape_name_card(self) -> Optional[Dict[str, Any]]:
         """
         Scrapes the first card on bumble: Returns a dictionary of name, age, and profession-- 
         None for any field not found
         """
-        name = self.driver.find_element(By.XPATH, '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[1]/article/div[1]/div[1]/article/div[2]/section/header/h1/span[1]')
-        age = self.driver.find_element(By.XPATH, '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[1]/article/div[1]/div[1]/article/div[2]/section/header/h1/span[2]').replace(", ", "")
-        profession = self.driver.find_element(By.CLASS_NAME, 'encounters-story-profile__occupation')
-        age = int(age)
 
+        def get_name() -> str:
+            return self.driver.find_element(By.XPATH, '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[1]/article/div[1]/div[1]/article/div[2]/section/header/h1/span[1]').text
+        
+        def get_age() -> int:
+            return int(self.driver.find_element(By.XPATH, '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[1]/article/div[1]/div[1]/article/div[2]/section/header/h1/span[2]').text.replace(", ", ""))
+        
+        def get_profession() -> Optional[str]:
+            try:
+                return self.driver.find_element(By.CLASS_NAME, 'encounters-story-profile__occupation').text
+            except NoSuchElementException:
+                return None
+            
         return {
-            'name' : name,
-            'age' : age,
-            'profession' : profession
+            'name' : get_name(),
+            'age' : get_age(),
+            'profession' : get_profession()
         }
 
 
     @BaseScraper.retry_on_failure
-    @BaseScraper.handle_errors
     def scrape_bio(self) -> Optional[str]:
         bio = self.driver.find_element(By.XPATH, '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[1]/article/div[1]/div[2]/article/div/section/div/p')
         return bio
 
 
     @BaseScraper.retry_on_failure
-    @BaseScraper.handle_errors
     def scrape_bio_card(self) -> Optional[Dict[str, Any]]:
         """
         Scrapes the second card on Bumble, returns a dictionary of different attributees found on the card (e.g
@@ -100,7 +104,6 @@ class Bumbler(BaseScraper):
     #     return location
 
     @BaseScraper.retry_on_failure
-    @BaseScraper.handle_errors
     def scrape_location_card(self) -> Optional[Dict[str, Any]]:
         """
         Scrapes last card on bumble, returns a dictionary of attributes (e.g home town, residential location etc. --)
@@ -162,8 +165,9 @@ class Bumbler(BaseScraper):
         body.send_keys(Keys.ARROW_DOWN)
 
 
+    @BaseScraper.refresh_on_failure
     def next_profile(self) -> bool:
-        buttons_container = self.self.driver.find_element(By.XPATH, '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[2]/div/div[2]/div')
+        buttons_container = self.driver.find_element(By.XPATH, '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[2]/div/div[2]/div')
         buttons_list = buttons_container.find_elements(By.CLASS_NAME, 'encounters-controls__action')
         
         # Handle the case where the backtrack button is not present/interactable
@@ -175,9 +179,9 @@ class Bumbler(BaseScraper):
 
 
     def scrape_profile(self):
-        self.scrape_name_card()
-        self.scrape_bio_card()
-        self.scrape_flavor_cards()
-        self.scrape_location_card()
+        print(self.scrape_name_card())
+        # self.scrape_bio_card()
+        # self.scrape_flavor_cards()
+        # self.scrape_location_card()
 
     

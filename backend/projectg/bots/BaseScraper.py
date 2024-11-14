@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 import time
+import logging
 
 class BaseScraper(ABC):
     """
@@ -13,6 +14,7 @@ class BaseScraper(ABC):
         self.driver = driver
         self.max_retries = max_retries
         self.wait_for_retry = wait_for_retry
+        self.logger = logging.getLogger(f"{self.__class__.__name__}")
 
     @abstractmethod
     def next_profile():
@@ -22,35 +24,30 @@ class BaseScraper(ABC):
     def scrape_profile():
         pass
 
-    def refresh_on_failure(self):
-        self.driver.refresh()
-        time.sleep(self.wait_for_retry)
-
-    def handle_errors(self, func):
-        """
-        Decorator for handling common scraping errors
-        """
-        def wrapper(*args, **kwargs):
+    @staticmethod
+    def refresh_on_failure(func):
+        def wrapper(self, *args, **kwargs):
             try:
-                return func(*args, **kwargs)
-            except NoSuchElementException as e:
-                return None
-            except TimeoutException as e:
-                return None
+                return func(self, *args, **kwargs)
             except Exception as e:
-                return None
+                self.driver.refresh()
+                time.sleep(self.wait_for_retry)
+                return func(self, *args, **kwargs)
         return wrapper
     
-    def retry_on_failure(self, func):
+    @staticmethod
+    def retry_on_failure(func):
         """
         Decorator for retrying failed operations
         """
-        def wrapper(*args, **kwargs):
+        def wrapper(self, *args, **kwargs):
             for attempt in range(self.max_retries):
                 try:
-                    return func(*args, **kwargs)
-                except Exception:
+                    return func(self, *args, **kwargs)
+                except Exception as e:
                     if attempt + 1 == self.max_retries:
+                        self.logger.error(f"Failed after {self.max_retries} attempts: {e}")
                         raise
+                    self.logger.warning(f"Attempt {attempt + 1} failed: {e}")
                     time.sleep(self.wait_for_retry)
         return wrapper

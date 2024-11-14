@@ -4,7 +4,8 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from .config import Config
-from .bots import TinderBot, Bumbler
+# from .bots import Bumbler, TinderBot 
+from .bots.Bumbler import Bumbler
 
 logging.basicConfig(
     level = logging.INFO,
@@ -41,7 +42,7 @@ def run_scraper(website: ScraperType, count: int):
 
     # Create a mapping to the class we want, based on input
     scrapers = {
-        'tinder' : TinderBot,
+        # 'tinder' : TinderBot,
         'bumble' : Bumbler
     }
     
@@ -54,7 +55,7 @@ def run_scraper(website: ScraperType, count: int):
     scraper = scraper_class(driver)
     
     for i in range(count):
-        scraper.scrape_profile(driver)
+        scraper.scrape_profile()
 
     logger.info(f"Successfully scraped {count} profiles from {website}")
 
