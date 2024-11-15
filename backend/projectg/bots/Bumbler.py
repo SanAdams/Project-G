@@ -1,13 +1,12 @@
-from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.common.exceptions import NoSuchElementException
-import os
 import time
-from dotenv import load_dotenv
 from typing import Optional, Dict, Any, List
 from projectg.models.Prompt import Prompt
 from .BaseScraper import BaseScraper 
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 class Bumbler(BaseScraper):
 
@@ -37,13 +36,14 @@ class Bumbler(BaseScraper):
         }
 
 
-    @BaseScraper.retry_on_failure
     def scrape_bio(self) -> Optional[str]:
-        bio = self.driver.find_element(By.XPATH, '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[1]/article/div[1]/div[2]/article/div/section/div/p')
+        try:
+            bio = self.driver.find_element(By.XPATH, '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[1]/article/div[1]/div[2]/article/div/section/div/p').text
+        except NoSuchElementException:
+            return None
         return bio
 
 
-    @BaseScraper.retry_on_failure
     def scrape_bio_card(self) -> Optional[Dict[str, Any]]:
         """
         Scrapes the second card on Bumble, returns a dictionary of different attributees found on the card (e.g
@@ -54,6 +54,8 @@ class Bumbler(BaseScraper):
         attribute_images_containers = attribute_list_element.find_elements(By.CLASS_NAME, 'pill__image-box')
        
         attributes = {}
+
+        attributes['bio'] = self.scrape_bio()
 
         attribute_map = {
             'heightv2.png': 'height',
@@ -74,7 +76,7 @@ class Bumbler(BaseScraper):
         for current_image_container in attribute_images_containers:
             current_image = current_image_container.find_element(By.TAG_NAME, 'img')
             current_image_src = current_image.get_attribute('src')
-            attribute = current_image_container.get_attribute('alt')
+            attribute = current_image.get_attribute('alt')
 
 
             for identifier, attribute_name in attribute_map.items():
@@ -124,10 +126,10 @@ class Bumbler(BaseScraper):
                 attributes['home_town'] = location_widget_pills[1].text
             elif len(location_widget_pills) == 1:
                 if "Lives in" in location_widget_pills[0].text:
-                    residential_location = self.clean_location_text(
+                    attributes['residential_location'] = self.clean_location_text(
                         location_widget_pills[0].text)
                 else:
-                    attributeshome_town = self.clean_location_text(location_widget_pills[0].text)
+                    attributes['home_town'] = self.clean_location_text(location_widget_pills[0].text)
 
             top_spotify_artists_list = self.driver.find_elements(
                 By.CLASS_NAME, 'spotify-widget__artist')
@@ -140,25 +142,22 @@ class Bumbler(BaseScraper):
         return attributes
 
 
-    def scrape_flavor_cards(self, bio_present: bool) -> List[Prompt]:
-        album_containter = self.driver.find_element(By.XPATH, '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[1]/article/div[1]')
-        flavor_cards = self.filter_ptags(album_containter.find_elements(By.TAG_NAME, 'p'), 'encounters-story-about__text')
-        num_flavor_cards = len(flavor_cards)
-        Prompts = []
+    def scrape_prompts(self) -> List[Prompt]:
+        """
+        Scrapes prompts from a profile and returns them as a list of Prompt objects.
+        """
         
-        start = 1 if bio_present else 0
+        prompts = []
+        sections = self.driver.find_elements(By.CSS_SELECTOR, 'section.encounters-story-section--question')
+        
+        for section in sections:
+            question = section.find_element(By.CSS_SELECTOR, 'h2.p-2').get_attribute('innerHTML')
+            answer = section.find_element(By.CSS_SELECTOR, 'p.encounters-story-about__text').get_attribute('innerHTML')
+            prompts.append(Prompt(question=question, answer=answer))
+            
 
-        for i in range(start, num_flavor_cards):
-            Prompts.append(flavor_cards[i].text.strip())
-            self.scroll_down()
-            time.sleep(1)
-
-        return Prompts
-
-
-    def filter_ptags(ptags, class_name):
-        return [p for p in ptags if class_name == p.get_attribute('class')]
-
+        return prompts
+        
 
     def scroll_down(self):
         body = self.driver.find_element(By.TAG_NAME, 'body')
@@ -180,8 +179,24 @@ class Bumbler(BaseScraper):
 
     def scrape_profile(self):
         print(self.scrape_name_card())
-        # self.scrape_bio_card()
-        # self.scrape_flavor_cards()
+        self.scroll_down()
+
+        WebDriverWait(self.driver, 2).until(
+            EC.presence_of_element_located(
+                (By.XPATH, '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[1]/article/div[1]/div[2]/article/div/section/div/ul'))
+        )
+        
+        print(self.scrape_bio_card())
+        self.scroll_down()
+        
+        print(self.scrape_prompts())
+       
+        location_visible = self.driver.find_element(By.CLASS_NAME, 'location-widget__town').is_displayed()
+        while not location_visible:
+            location_visible = self.driver.find_element(By.CLASS_NAME, 'location-widget__town').is_displayed()
+            self.scroll_down()
+
+        
         # self.scrape_location_card()
 
     
