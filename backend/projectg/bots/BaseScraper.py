@@ -30,6 +30,7 @@ class BaseScraper(ABC):
             try:
                 return func(self, *args, **kwargs)
             except Exception as e:
+                self.logger.error(f"Failed, driver is refreshing: {e}")
                 self.driver.refresh()
                 time.sleep(self.wait_for_retry)
                 return func(self, *args, **kwargs)
@@ -47,7 +48,7 @@ class BaseScraper(ABC):
                 except Exception as e:
                     if attempt + 1 == self.max_retries:
                         self.logger.error(f"Failed after {self.max_retries} attempts: {e}")
-                        raise
+                        return None
                     self.logger.warning(f"Attempt {attempt + 1} failed: {e}")
                     time.sleep(self.wait_for_retry)
         return wrapper
