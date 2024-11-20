@@ -4,8 +4,8 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from .config import Config
-# from .bots import Bumbler, TinderBot 
 from .bots.Bumbler import Bumbler
+from selenium.common.exceptions import SessionNotCreatedException
 
 logging.basicConfig(
     level = logging.INFO,
@@ -54,7 +54,7 @@ def run_scraper(website: ScraperType, count: int):
     # Create an instance of the class and pass in driver
     scraper = scraper_class(driver)
     
-    for i in range(count):
+    for _ in range(count):
         scraper.scrape_profile()
 
     logger.info(f"Successfully scraped {count} profiles from {website}")
@@ -78,6 +78,7 @@ def main():
         sys.exit(1)
 
     run_scraper(website, num_profiles)
-
+        
+    
 if __name__ == "__main__":
     main()
