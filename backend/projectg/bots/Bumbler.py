@@ -1,6 +1,6 @@
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
-from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import NoSuchElementException, TimeoutException
 import time
 from typing import Optional, Dict, Any, List
 from projectg.models.Prompt import Prompt
@@ -87,14 +87,6 @@ class Bumbler(BaseScraper):
 
         return attributes
 
-
-    def determine_location_type(location: str):
-        if "Lives in" in location:
-            return "residential"
-        else:
-            return "home_town"
-
-
     # def clean_location_text(self, location: str):
     #     location_type = self.determine_location_type(location)
     #     if location_type == 'home_town':
@@ -105,41 +97,55 @@ class Bumbler(BaseScraper):
     #         location = location[12:length-4]
     #     return location
 
-    @BaseScraper.retry_on_failure
     def scrape_location_card(self) -> Optional[Dict[str, Any]]:
         """
         Scrapes last card on bumble, returns a dictionary of attributes (e.g home town, residential location etc. --)
         None for any field not found
         """
-        current_location = self.driver.find_element(By.CLASS_NAME, 'location-widget__town')
-        if current_location:
-            current_location = current_location.text
-        location_widget_element = self.safe_get_element(
-            By.CLASS_NAME, 'location-widget__info')
+        try:
+            location_wrapper = self.driver.find_element(By.CLASS_NAME, 'location-widget__info')
+            locations = location_wrapper.find_elements(By.CLASS_NAME, 'location-widget__pill')
+            if not locations:
+                return None
+        except NoSuchElementException:
+            return None
+        
 
-        attributes = {}
+        def get_current_location() -> str:
+            current_location = self.driver.find_element(By.CLASS_NAME, 'location-widget__town').text
+            return current_location
+        
 
-        if location_widget_element:
-            location_widget_pills = location_widget_element.find_elements(By.CLASS_NAME, 'location-widget__pill')
-            if len(location_widget_pills) > 1:
-                attributes['residential_location'] = location_widget_pills[0].text
-                attributes['home_town'] = location_widget_pills[1].text
-            elif len(location_widget_pills) == 1:
-                if "Lives in" in location_widget_pills[0].text:
-                    attributes['residential_location'] = self.clean_location_text(
-                        location_widget_pills[0].text)
+        def get_locations() -> tuple[Optional[str], Optional[str]]:
+            residential = None
+            home_town = None
+            
+            for location in locations:
+                location_text = location.text
+                if "Lives in" in location_text:
+                    residential = location_text
                 else:
-                    attributes['home_town'] = self.clean_location_text(location_widget_pills[0].text)
+                    home_town = location_text
+                    
+            return (residential, home_town)
 
-            top_spotify_artists_list = self.driver.find_elements(
-                By.CLASS_NAME, 'spotify-widget__artist')
-            num_artists = len(top_spotify_artists_list)
-            top_spotify_artists = []
-            for i in range(num_artists):
-                top_spotify_artists.append(
-                    top_spotify_artists_list[i].text.strip())
 
-        return attributes
+        def get_spotify_artists() -> Optional[List[str]]:
+            try:
+                artists = self.driver.find_elements(By.CLASS_NAME, 'spotify-widget__artist')
+                return [artist.text for artist in artists]
+            except NoSuchElementException:
+                return None
+        
+
+        residential_location, home_town = get_locations()
+
+        return {
+            'current_location' : get_current_location(),
+            'home_town' : home_town,
+            'residential_location' : residential_location,
+            'spotify_artists' : get_spotify_artists()
+        }
 
 
     def scrape_prompts(self) -> List[Prompt]:
@@ -182,21 +188,28 @@ class Bumbler(BaseScraper):
         self.scroll_down()
 
         WebDriverWait(self.driver, 2).until(
-            EC.presence_of_element_located(
-                (By.XPATH, '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[1]/article/div[1]/div[2]/article/div/section/div/ul'))
+                EC.presence_of_element_located((By.XPATH, 
+                '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[1]/article/div[1]/div[2]/article/div/section/div/ul'))
         )
         
         print(self.scrape_bio_card())
         self.scroll_down()
-        
-        print(self.scrape_prompts())
+
+        try:
+            WebDriverWait(self.driver, 2).until(
+                EC.presence_of_element_located((By.CSS_SELECTOR, 'section.encounters-story-section--question'))
+            )
+            print(self.scrape_prompts())
+        except Exception as e:
+            pass
        
         location_visible = self.driver.find_element(By.CLASS_NAME, 'location-widget__town').is_displayed()
         while not location_visible:
             location_visible = self.driver.find_element(By.CLASS_NAME, 'location-widget__town').is_displayed()
             self.scroll_down()
 
-        
-        # self.scrape_location_card()
+        print(self.scrape_location_card())
+
+        self.next_profile()
 
     
