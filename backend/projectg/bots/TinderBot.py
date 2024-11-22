@@ -1,52 +1,59 @@
+from collections import defaultdict
+from typing import Optional
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from .BaseScraper import BaseScraper
-
+from selenium.webdriver.common.keys import Keys
 class TinderBot(BaseScraper):
     def open_profile(self):
         body = self.driver.find_element(By.TAG_NAME, 'body')
         body.send_keys(Keys.ARROW_UP)
-        return
 
 
     def scrape_name(self):
-        name = self.driver.find_element(By.XPATH, '//span[@class="Pend(8px)"]').text
-        return name
+        names = self.driver.find_elements(By.XPATH, '//span[@class="Typs(display-1-strong)"]')
+        return names[1].text
 
 
     def scrape_age(self):
-        age = self.driver.find_element(
-            By.XPATH, '//span[@class="Whs(nw) Typs(display-2-strong)"]').text
-        return int(age)
-
+        ages = self.driver.find_elements(
+            By.XPATH, '//span[@class="Typs(display-2-regular) As(b)"]//span')
+        return int(ages[1].text)
+    
 
     def next_profile(self):
-        pass_button = driver.find_element(
-            By.XPATH, '//div[@class="gamepad-button-wrapper Mx(a) Fxs(0) Sq(70px) Sq(60px)--s"][1]')
-        pass_button.click()
-        return
+        body = self.driver.find_element(By.TAG_NAME, 'body')
+        body.send_keys(Keys.ARROW_LEFT)
 
 
-    def scrape_relationship_type(self):
-        relationship_type = safe_get_element_text(
-            By.XPATH, '//div[@class="Typs(subheading-1) CenterAlign"]')
-        return relationship_type
+    def scrape_relationship_intent(self):
+        self.driver.find_element(By.XPATH, '//div[text() = "Looking for"]')
+        
 
+    def scrape_relationship_type(self) -> Optional[str]:
+        try:
+            relationship_type = self.driver.find_element(By.CSS_SELECTOR, 
+            r'.Bdrs\(30px\).M\(4px\).Px\(12px\).Typs\(body-1-regular\).Py\(4px\).Bgc\(\$c-ds-background-passions-sparks-inactive\)')
+            return relationship_type.text
+        except NoSuchElementException:
+            self.logger.error('Relationship type element not properly found')
+            return None
+        
 
-    def scrape_basics():
+    def scrape_basics(self):
         basic_attributes = defaultdict(lambda: "")
 
         try:
             # Wait for the "Basics" section to be present
-            WebDriverWait(driver, 10).until(
+            WebDriverWait(self.driver, 2).until(
                 EC.presence_of_element_located((By.XPATH, '//h2[text()="Basics"]'))
             )
 
             # Locate the Basics section
-            basics_section = driver.find_element(
+            basics_section = self.driver.find_element(
                 By.XPATH, '//h2[text()="Basics"]/following-sibling::div'
             )
 
@@ -66,7 +73,7 @@ class TinderBot(BaseScraper):
                                 return texts;
                             """
 
-                    attribute_value = driver.execute_script(
+                    attribute_value = self.driver.execute_script(
                         script, div)
 
                     # Store the attribute and its value in the dictionary
@@ -85,17 +92,17 @@ class TinderBot(BaseScraper):
         return basic_attributes
 
 
-    def scrape_lifestyle():
+    def scrape_lifestyle(self):
         lifestyle_attributes = defaultdict(lambda: "")
         try:
             # Wait for the "lifestyle" section to be present
-            WebDriverWait(driver, 10).until(
+            WebDriverWait(self.driver, 10).until(
                 EC.presence_of_element_located(
                     (By.XPATH, '//h2[text()="Lifestyle"]'))
             )
 
             # Locate the lifestyle section
-            lifestyle_section = driver.find_element(
+            lifestyle_section = self.driver.find_element(
                 By.XPATH, '//h2[text()="Lifestyle"]/following-sibling::div'
             )
 
@@ -115,7 +122,7 @@ class TinderBot(BaseScraper):
                                 return texts;
                             """
 
-                    attribute_value = driver.execute_script(
+                    attribute_value = self.driver.execute_script(
                         script, div)
 
                     # Store the attribute and its value in the dictionary
@@ -142,9 +149,21 @@ class TinderBot(BaseScraper):
         pass
 
 
-    def scrape_anthem():
+    def scrape_essentials():
         pass
 
 
     def scrape_languages():
         pass
+
+    def scrape_anthem():
+        pass
+    
+    def scrape_profile(self):
+        print(self.scrape_name())
+        print(self.scrape_age())
+        self.open_profile()
+        print(self.scrape_relationship_type())
+        # print(self.scrape_basics())
+        # print(self.scrape_lifestyle())
+        # self.next_profile()
