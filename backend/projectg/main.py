@@ -5,7 +5,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from .config import Config
 from .bots.Bumbler import Bumbler
-from selenium.common.exceptions import SessionNotCreatedException
+from .bots.TinderBot import TinderBot
 
 logging.basicConfig(
     level = logging.INFO,
@@ -24,7 +24,7 @@ def init_driver():
         service = Service(str(Config.CHROME_PATHS['driver']))
         driver = webdriver.Chrome(options, service)
 
-        logger.info("Successfully initizlized Chrome webdriver")
+        logger.info("Successfully initialized Chrome webdriver")
     except Exception as e:
         logger.error(f"Failed to initialize webdriver: {str(e)}")
         raise
@@ -42,7 +42,7 @@ def run_scraper(website: ScraperType, count: int):
 
     # Create a mapping to the class we want, based on input
     scrapers = {
-        # 'tinder' : TinderBot,
+        'tinder' : TinderBot,
         'bumble' : Bumbler
     }
     
