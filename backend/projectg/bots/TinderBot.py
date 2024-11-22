@@ -8,6 +8,30 @@ from selenium.webdriver.support import expected_conditions as EC
 from .BaseScraper import BaseScraper
 from selenium.webdriver.common.keys import Keys
 class TinderBot(BaseScraper):
+
+    def get_section_div_idx(self, section_title: str) -> Optional[int]:
+        # sections_titles = [
+        #     'essentials',
+        #     'basics',
+        #     'relationship details',
+        #     'basics',
+        #     'lifestyle',
+        #     'interests',
+        #     'about me'
+        # ]
+
+        sections = self.driver.find_elements(By.CLASS_NAME, 
+                                  "//div[contains(@class, 'P(24px)') and contains(@class, 'W(100%)') and contains(@class, 'Bgc($c-ds-background-primary)') and contains(@class, 'Bdrs(12px)')]"
+                                  )
+        
+        for i in range(len(sections)):
+            section = sections[i]
+            if section.find_element()
+
+        idx: int
+
+
+        return idx
     def open_profile(self):
         body = self.driver.find_element(By.TAG_NAME, 'body')
         body.send_keys(Keys.ARROW_UP)
@@ -35,9 +59,7 @@ class TinderBot(BaseScraper):
 
     def scrape_relationship_type(self) -> Optional[str]:
         try:
-            relationship_type = self.driver.find_element(By.CSS_SELECTOR, 
-            r'.Bdrs\(30px\).M\(4px\).Px\(12px\).Typs\(body-1-regular\).Py\(4px\).Bgc\(\$c-ds-background-passions-sparks-inactive\)')
-            return relationship_type.text
+
         except NoSuchElementException:
             self.logger.error('Relationship type element not properly found')
             return None
