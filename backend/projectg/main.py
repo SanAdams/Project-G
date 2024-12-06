@@ -56,6 +56,7 @@ def run_scraper(website: ScraperType, count: int):
     
     for _ in range(count):
         scraper.scrape_profile()
+        # scraper.next_profile()
 
     logger.info(f"Successfully scraped {count} profiles from {website}")
 
