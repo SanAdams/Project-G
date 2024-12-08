@@ -13,21 +13,19 @@ class TinderBot(BaseScraper):
 
     def get_div_indexes(self) -> dict[str, Optional[int]]:
         """
-        Returns a dictionary dict[str, Optional[int]] that maps the section title to the index of its div if the div exists.
+         Returns a mapping of section titles to their corresponding div indices.
         """
 
         div_indexes = defaultdict(lambda: None)
 
-        divs = self.driver.find_elements(By.XPATH, 
-                                  "//div[contains(@class, 'P(24px)') and contains(@class, 'W(100%)') and contains(@class, 'Bgc($c-ds-background-primary)') and contains(@class, 'Bdrs(12px)')]"
-                                  )
+        divs = self.driver.find_elements(By.XPATH, "//div[contains(@class, 'P(24px)') and contains(@class, 'W(100%)') and contains(@class, 'Bgc($c-ds-background-primary)') and contains(@class, 'Bdrs(12px)')]")
 
         
-        for i in range(len(divs)):
+        for i in range(0, len(divs)):
             current_div = divs[i]
             heading = current_div.find_element(By.XPATH, ".//div[contains(@class, 'Mstart(8px)') and contains(@class, 'Mb(0)') and contains(@class, '$c-ds-text-secondary') and contains(@class,'Typs(body-2-strong)')]")
-            # Query as to whether the index as provided by this method will be correct in the XPATH or if it's off by 1
             div_indexes[f'{heading.text}'] = i
+            print(heading.text)
 
         return div_indexes
 
@@ -205,13 +203,16 @@ class TinderBot(BaseScraper):
 
         print(self.scrape_name())
         print(self.scrape_age())
-
         self.open_profile()
+
         WebDriverWait(self.driver, 10).until(EC.visibility_of_all_elements_located((By.XPATH, "//div[contains(@class, 'P(24px)') and contains(@class, 'W(100%)') and contains(@class, 'Bgc($c-ds-background-primary)') and contains(@class, 'Bdrs(12px)')]")))
         div_indexes = self.get_div_indexes()
         
         print(self.scrape_relationship_intent())
 
+        div_indexes = self.get_div_indexes()
+
+        print(self.scrape_relationship_intent())
         print(self.scrape_relationship_type())
         
         bio_index = div_indexes['About me']
