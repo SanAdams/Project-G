@@ -57,8 +57,13 @@ class TinderBot(BaseScraper):
         span = self.driver.find_element(By.XPATH, relationship_span_xpath)
         return span.text
 
-    def scrape_bio(self) -> Optional[str]:
-        pass
+    def scrape_bio(self, index: int) -> Optional[str]:
+        bio_div_xpath = f"//div[contains(@class, 'P(24px)') and contains(@class, 'W(100%)') and contains(@class, 'Bgc($c-ds-background-primary)') and contains(@class, 'Bdrs(12px)')][{index}]"
+        bio_xpath = ".//div[contains(@class, 'C($c-ds-text-primary)') and contains(@class, 'Typs(body-1-regular)')]"
+
+        bio = self.driver.find_element(By.XPATH, bio_div_xpath).find_element(By.XPATH, bio_xpath).text
+        
+        return bio
 
     def scrape_relationship_type(self) -> Optional[str]:
         relationship_types = [
@@ -197,17 +202,20 @@ class TinderBot(BaseScraper):
         pass
     
     def scrape_profile(self):
-        div_indexes = self.get_div_indexes()
 
         print(self.scrape_name())
         print(self.scrape_age())
 
         self.open_profile()
+        WebDriverWait(self.driver, 10).until(EC.visibility_of_all_elements_located((By.XPATH, "//div[contains(@class, 'P(24px)') and contains(@class, 'W(100%)') and contains(@class, 'Bgc($c-ds-background-primary)') and contains(@class, 'Bdrs(12px)')]")))
+        div_indexes = self.get_div_indexes()
+        
         print(self.scrape_relationship_intent())
 
         print(self.scrape_relationship_type())
         
-        # print(self.scrape_bio())
+        bio_index = div_indexes['About me']
+        print(self.scrape_bio(bio_index))
 
         # print(self.scrape_basics())
         
