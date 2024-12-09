@@ -11,9 +11,9 @@ from selenium.webdriver.common.keys import Keys
 from projectg.models.Prompt import Prompt
 class TinderBot(BaseScraper):
 
-    def get_div_indexes(self) -> dict[str, Optional[int]]:
+    def get_div_indexes(self) -> DefaultDict[str, Optional[int]]:
         """Returns a mapping of section titles to their corresponding div indices."""
-        div_indexes = {}
+        div_indexes = defaultdict(lambda: None)
         
         content_divs = WebDriverWait(self.driver, 10).until(
             EC.presence_of_all_elements_located((By.XPATH, 
@@ -67,21 +67,31 @@ class TinderBot(BaseScraper):
         body.send_keys(Keys.ARROW_LEFT)
 
 
-    def scrape_relationship_intent(self) -> str:
+    def scrape_relationship_intent(self) ->Optional[str]:
         relationship_span_xpath = "//span[contains(@class, 'Typs(display-3-strong)') and contains(@class, 'C($c-ds-text-primary)') and contains(@class, 'Mstart(4px)')]"
 
-        span = self.driver.find_element(By.XPATH, relationship_span_xpath)
-        return span.text
+        try:
+            span = self.driver.find_element(By.XPATH, relationship_span_xpath)
+            return span.text
+        except NoSuchElementException:
+            self.logger.error('Relationship intent not found')
+            return None
 
     def scrape_bio(self, index: int) -> Optional[str]:
-        print(f"bio index is {index}")
         bio_div_xpath = f"//div[contains(@class, 'P(24px)') and contains(@class, 'W(100%)') and contains(@class, 'Bgc($c-ds-background-primary)') and contains(@class, 'Bdrs(12px)')][{index + 1}]"
         bio_xpath = ".//div[contains(@class, 'C($c-ds-text-primary)') and contains(@class, 'Typs(body-1-regular)')]"
 
-        bio = self.driver.find_element(By.XPATH, bio_div_xpath).find_element(By.XPATH, bio_xpath).text
-        
-        return bio
+        if not index:
+            return None
+        else:    
+            try:
+                bio = self.driver.find_element(By.XPATH, bio_div_xpath).find_element(By.XPATH, bio_xpath).text
+                return bio
+            except NoSuchElementException:
+                self.logger.error('Bio not found')
+                return None
 
+        
     def scrape_relationship_type(self) -> Optional[str]:
         relationship_types = [
             'Open to exploring',
@@ -100,71 +110,47 @@ class TinderBot(BaseScraper):
         
         return None
 
-    def scrape_basics(self, index: Optional[int]) -> DefaultDict[str, str]:
+    def scrape_basics(self, index: Optional[int]) -> dict[str, str]:
         """
-        Scrape the basics section of a Tinder profile. Empty string for any field not found
+        Scrape the basics section of a Tinder profile.
+
+        Returns a dict[str, str] of attribute titles to attribute values
         """
 
         if not index:
             return {}
         else:
-            #TODO: Rewrite this entire function. It doesn't work
-            basic_attributes = defaultdict(lambda: "")
+            basic_attributes = {}
             basics_div_xpath = f"//div[contains(@class, 'P(24px)') and contains(@class, 'W(100%)') and contains(@class, 'Bgc($c-ds-background-primary)') and contains(@class, 'Bdrs(12px)')][{index + 1}]"
+            basics_div = self.driver.find_element(By.XPATH, basics_div_xpath)
 
-            self.driver.find_element(By.XPATH, basics_div_xpath)
+            basics_values_xpath = (
+                ".//div[contains(@class, 'Typs(body-1-regular)') and "
+                "contains(@class, 'C($c-ds-text-primary)') and "
+                "contains(@class, 'Mstart(8px)')]"
+            )
+
+            basics_values = [
+                element.text or element.get_attribute('textContent')
+                for element in basics_div.find_elements(By.XPATH, basics_values_xpath)
+            ]
+            
+            basics_titles_xpath = ".//h3[contains(@class, 'C($c-ds-text-secondary)') and contains(@class, 'Typs(subheading-2)')]"
+            basics_titles = [
+                element.text or element.get_attribute('textContent')
+                for element in basics_div.find_elements(By.XPATH, basics_titles_xpath)
+            ]
+            
+            basic_attributes = dict(zip(basics_titles, basics_values))
 
         return basic_attributes
 
+    # Might implement this later, seems a bit much
+    def scrape_going_out(self, index: int):
+        pass
 
     def scrape_lifestyle(self):
-        lifestyle_attributes = defaultdict(lambda: "")
-        try:
-            # Wait for the "lifestyle" section to be present
-            WebDriverWait(self.driver, 10).until(
-                EC.presence_of_element_located(
-                    (By.XPATH, '//h2[text()="Lifestyle"]'))
-            )
-
-            # Locate the lifestyle section
-            lifestyle_section = self.driver.find_element(
-                By.XPATH, '//h2[text()="Lifestyle"]/following-sibling::div'
-            )
-
-            # Find all child div elements inside the lifestyle section
-            lifestyle_divs = lifestyle_section.find_elements(By.XPATH, './div')
-
-            for div in lifestyle_divs:
-                try:
-                    script = """
-                                let texts = [];
-                                let children = arguments[0].childNodes;
-                                for (let i = 0; i < children.length; i++) {
-                                    if (children[i].nodeType === Node.TEXT_NODE || children[i].nodeType === Node.ELEMENT_NODE) {
-                                        texts.push(children[i].textContent.trim());
-                                    }
-                                }
-                                return texts;
-                            """
-
-                    attribute_value = self.driver.execute_script(
-                        script, div)
-
-                    # Store the attribute and its value in the dictionary
-                    lifestyle_attributes[attribute_value[0]
-                                        ] = attribute_value[2]
-
-                except NoSuchElementException:
-                    # Debugging
-                    print(
-                        f"Couldn't find expected elements inside this div: {div.get_attribute('outerHTML')}")
-                    continue
-
-        except NoSuchElementException:
-            print("No elements found for lifestyle.")
-
-        return lifestyle_attributes
-
+        pass
 
     def scrape_interests(self):
         pass
