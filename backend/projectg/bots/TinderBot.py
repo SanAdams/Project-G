@@ -212,8 +212,25 @@ class TinderBot(BaseScraper):
 
         return interests
 
-    def scrape_top_spotify_artists(self):
-        pass
+    def scrape_top_spotify_artists(self) -> list[str]:
+
+        try:
+            spotify_artists_div_xpath = "//div[text() = 'My top artists']/../.."
+            spotify_artists_div = self.driver.find_element(By.XPATH, spotify_artists_div_xpath)
+            
+            # Reveal hidden artists
+            try:
+                more_button = spotify_artists_div.find_element(By.XPATH, ".//div[@class = 'Px(16px)']")
+                more_button.click()
+            except NoSuchElementException:
+                pass
+
+            spotify_artists = spotify_artists_div.find_elements(By.XPATH, './/span[@class = "Va(m)"]')
+
+            artists = [element.text or element.get_attribute('textContent') for element in spotify_artists]
+            return artists
+        except NoSuchElementException:
+            return []
 
 
     def scrape_essentials(self):
@@ -268,4 +285,6 @@ class TinderBot(BaseScraper):
         print(self.scrape_interests(interests_index))
 
         print(self.scrape_anthem())
+
+        print(self.scrape_top_spotify_artists())
         # print(div_indexes)
