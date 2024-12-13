@@ -120,6 +120,7 @@ class TinderBot(BaseScraper):
         if not index:
             return {}
         else:
+            
             basic_attributes = {}
             basics_div_xpath = f"//div[contains(@class, 'P(24px)') and contains(@class, 'W(100%)') and contains(@class, 'Bgc($c-ds-background-primary)') and contains(@class, 'Bdrs(12px)')][{index + 1}]"
             basics_div = self.driver.find_element(By.XPATH, basics_div_xpath)
@@ -129,6 +130,13 @@ class TinderBot(BaseScraper):
                 "contains(@class, 'C($c-ds-text-primary)') and "
                 "contains(@class, 'Mstart(8px)')]"
             )
+
+            # If there are more attributes hidden from view, reveal them
+            try:
+                more_button = basics_div.find_element(By.XPATH, "//div[contains(@class, 'Px(16px)')]")
+                more_button.click()
+            except NoSuchElementException:
+                pass
 
             basics_values = [
                 element.text or element.get_attribute('textContent')
@@ -149,18 +157,67 @@ class TinderBot(BaseScraper):
     def scrape_going_out(self, index: int):
         pass
 
-    def scrape_lifestyle(self):
-        pass
+    def scrape_lifestyle(self, index: Optional[int]) -> dict[str, str]:
+        if not index:
+            return {}
+        else:
+            
+            lifestyle_attributes = {}
+            lifestyle_div_xpath = f"//div[contains(@class, 'P(24px)') and contains(@class, 'W(100%)') and contains(@class, 'Bgc($c-ds-background-primary)') and contains(@class, 'Bdrs(12px)')][{index + 1}]"
+            lifestyle_div = self.driver.find_element(By.XPATH, lifestyle_div_xpath)
 
-    def scrape_interests(self):
-        pass
+            lifestyle_values_xpath = (
+                ".//div[contains(@class, 'Typs(body-1-regular)') and "
+                "contains(@class, 'C($c-ds-text-primary)') and "
+                "contains(@class, 'Mstart(8px)')]"
+            )
 
+            # If there are more attributes hidden from view, reveal them
+            try:
+                more_button = lifestyle_div.find_element(By.XPATH, "//div[contains(@class, 'Px(16px)')]")
+                more_button.click()
+            except NoSuchElementException:
+                pass
+
+            lifestyle_values = [
+                element.text or element.get_attribute('textContent')
+                for element in lifestyle_div.find_elements(By.XPATH, lifestyle_values_xpath)
+            ]
+            
+            basics_titles_xpath = ".//h3[contains(@class, 'C($c-ds-text-secondary)') and contains(@class, 'Typs(subheading-2)')]"
+            lifestyle_titles = [
+                element.text or element.get_attribute('textContent')
+                for element in lifestyle_div.find_elements(By.XPATH, basics_titles_xpath)
+            ]
+            
+            lifestyle_attributes = dict(zip(lifestyle_titles, lifestyle_values))
+
+        return lifestyle_attributes
+
+
+    def scrape_interests(self, index: int) -> list[str]:
+        if not index:
+            return []
+        else:
+            interests = {}
+            interests_div_xpath = f"//div[contains(@class, 'P(24px)') and contains(@class, 'W(100%)') and contains(@class, 'Bgc($c-ds-background-primary)') and contains(@class, 'Bdrs(12px)')][{index + 1}]"
+            interests_div = self.driver.find_element(By.XPATH, interests_div_xpath)
+
+            interests_values_xpath = (
+                ".//span[contains(@class, 'Typs(body-1-regular)') and "
+                "contains(@class, 'C($c-ds-text-passions-shared)')]"
+            )
+
+            interests = [element.text or element.get_attribute('textContent') for element in interests_div.find_elements(By.XPATH, interests_values_xpath)]
+
+        return interests
 
     def scrape_top_spotify_artists(self):
         pass
 
 
     def scrape_essentials(self):
+
         pass
 
 
@@ -188,6 +245,14 @@ class TinderBot(BaseScraper):
         basics_index = div_indexes['Basics']
         print(self.scrape_basics(basics_index))
         
+        lifestlye_index = div_indexes['Lifestyle']
+        print(self.scrape_lifestyle(lifestlye_index))
+
+        # essentials_index = div_indexes['Essentials']
+        # print(self.scrape_essentials(essentials_index))
+
+        interests_index = div_indexes['Interests']
+        print(self.scrape_interests(interests_index))
         # print(div_indexes)
         
         # print(self.scrape_lifestyle())
