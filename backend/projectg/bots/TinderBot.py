@@ -233,6 +233,32 @@ class TinderBot(BaseScraper):
             return []
 
 
+    def scrape_prompts(self) -> Optional[list[Prompt]]:
+        """
+        Returns a list of Prompt objects corresponding to prompts answered on a particular Tinder profile
+        """
+
+        try:
+            prompt_divs_xpath = "//div[contains (@class, 'C($c-ds-text-primary)') and contains (@class ,'Typs(display-2-strong)')]/../.."
+            answer_xpath = ".//div[contains (@class, 'C($c-ds-text-primary)') and contains (@class ,'Typs(display-2-strong)')]"
+            question_xpath = ".//div[contains(@class, 'D(f)') and contains(@class, 'Ai(c)') and contains (@class, 'Mb(8px)')]"
+            
+            prompt_divs = self.driver.find_elements(By.XPATH, prompt_divs_xpath)
+            
+            prompts: list[Prompt] = []
+            for prompt_div in prompt_divs:
+
+                question = prompt_div.find_element(By.XPATH, question_xpath)
+                answer = prompt_div.find_element(By.XPATH, answer_xpath)
+
+                prompt = Prompt(question=question.text or question.get_attribute('textContent'), answer=answer.text or answer.get_attribute('textContent'))
+                prompts.append(prompt)
+
+            return prompts
+        except NoSuchElementException:
+            return None
+
+
     def scrape_essentials(self):
         pass
 
@@ -287,4 +313,6 @@ class TinderBot(BaseScraper):
         print(self.scrape_anthem())
 
         print(self.scrape_top_spotify_artists())
+
+        print(self.scrape_prompts())
         # print(div_indexes)
