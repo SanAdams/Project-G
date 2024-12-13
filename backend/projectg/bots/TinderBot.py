@@ -217,15 +217,27 @@ class TinderBot(BaseScraper):
 
 
     def scrape_essentials(self):
-
         pass
 
 
     def scrape_languages(self):
         pass
 
-    def scrape_anthem(self):
-        pass
+
+    def scrape_anthem(self) -> dict[str, str]:
+        try:
+            anthem_div_xpath = "//div[text() = 'My anthem']/../.."
+            anthem_div = self.driver.find_element(By.XPATH, anthem_div_xpath)
+            anthem_values = anthem_div.find_elements(By.XPATH, './/span[@class = "Va(m)"]')
+            
+            anthem = { 
+                        anthem_values[0].text or anthem_values[0].get_attribute('textContent'): 
+                        anthem_values[1].text or anthem_values[1].get_attribute('textContent')
+            }
+            return anthem
+        except NoSuchElementException:
+            return {}
+    
     
     def scrape_profile(self):
 
@@ -248,11 +260,12 @@ class TinderBot(BaseScraper):
         lifestlye_index = div_indexes['Lifestyle']
         print(self.scrape_lifestyle(lifestlye_index))
 
+        # TODO: implement this function
         # essentials_index = div_indexes['Essentials']
         # print(self.scrape_essentials(essentials_index))
 
         interests_index = div_indexes['Interests']
         print(self.scrape_interests(interests_index))
+
+        print(self.scrape_anthem())
         # print(div_indexes)
-        
-        # print(self.scrape_lifestyle())
