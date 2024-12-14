@@ -259,8 +259,22 @@ class TinderBot(BaseScraper):
             return None
 
 
-    def scrape_essentials(self):
-        pass
+    def scrape_essentials(self) -> dict[str, str]]:
+        
+        try:
+            essentials_div_xpath = "//div[text = ('Essentials')]/../.."
+            essentials_div = self.driver.find_element(By.XPATH, essentials_div_xpath)
+
+            svg_pathfill_d_list = {
+                'location' : 'M12.301'
+                
+            }
+            essentials = dict(zip())
+            self.logger.info('Successfully scraped essentials')
+            return essentials
+        except NoSuchElementException:
+            pass
+        
 
 
     def scrape_languages(self):
