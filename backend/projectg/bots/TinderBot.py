@@ -364,4 +364,3 @@ class TinderBot(BaseScraper):
         print(self.scrape_prompts())
 
         print(self.scrape_essentials())
-        # next_profile()
