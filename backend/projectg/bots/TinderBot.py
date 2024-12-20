@@ -279,7 +279,7 @@ class TinderBot(BaseScraper):
                 'M16.301' : 'height',
                 'M10.077' : 'sexuality',
                 'M12.225' : 'pronouns',
-                'm11.89' : 'languages',
+                'M22.757' : 'languages'
             }
 
             # Grab the elements that contain the text of the essential attributes
