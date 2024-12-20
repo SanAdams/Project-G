@@ -61,7 +61,7 @@ class TinderBot(BaseScraper):
             By.XPATH, '//span[@class="Typs(display-2-regular) As(b)"]//span')
         return int(ages[1].text)
     
-
+    
     def next_profile(self) -> None:
         body = self.driver.find_element(By.TAG_NAME, 'body')
         body.send_keys(Keys.ARROW_LEFT)
@@ -78,13 +78,13 @@ class TinderBot(BaseScraper):
             return None
 
     def scrape_bio(self, index: int) -> Optional[str]:
-        bio_div_xpath = f"//div[contains(@class, 'P(24px)') and contains(@class, 'W(100%)') and contains(@class, 'Bgc($c-ds-background-primary)') and contains(@class, 'Bdrs(12px)')][{index + 1}]"
-        bio_xpath = ".//div[contains(@class, 'C($c-ds-text-primary)') and contains(@class, 'Typs(body-1-regular)')]"
 
         if not index:
             return None
         else:    
             try:
+                bio_div_xpath = f"//div[contains(@class, 'P(24px)') and contains(@class, 'W(100%)') and contains(@class, 'Bgc($c-ds-background-primary)') and contains(@class, 'Bdrs(12px)')][{index + 1}]"
+                bio_xpath = ".//div[contains(@class, 'C($c-ds-text-primary)') and contains(@class, 'Typs(body-1-regular)')]"
                 bio = self.driver.find_element(By.XPATH, bio_div_xpath).find_element(By.XPATH, bio_xpath).text
                 return bio
             except NoSuchElementException:
@@ -154,8 +154,8 @@ class TinderBot(BaseScraper):
         return basic_attributes
 
     # Might implement this later, seems a bit much
-    def scrape_going_out(self, index: int):
-        pass
+    # def scrape_going_out(self, index: int):
+    #     pass
 
     def scrape_lifestyle(self, index: Optional[int]) -> dict[str, str]:
         if not index:
@@ -259,26 +259,63 @@ class TinderBot(BaseScraper):
             return None
 
 
-    def scrape_essentials(self) -> dict[str, str]]:
+    def scrape_essentials(self) -> dict[str, str]:
         
         try:
-            essentials_div_xpath = "//div[text = ('Essentials')]/../.."
+            essentials_div_xpath = "//div[text() = 'Essentials']/../.."
             essentials_div = self.driver.find_element(By.XPATH, essentials_div_xpath)
+            essential_xpath = (
+                ".//div[contains(@class, 'Typs(body-1-regular)') and " 
+                "contains(@class, 'C($c-ds-text-primary)') and " 
+                "contains(@class, 'Mstart(8px)')]"
+            )
 
-            svg_pathfill_d_list = {
-                'location' : 'M12.301'
-                
+
+            svg_pathfill_d_map = {
+                'M2.25' : 'residential_location',
+                'M12.301' : 'distance',
+                'M16.995' : 'profession',
+                'M11.171' : 'education',
+                'M16.301' : 'height',
+                'M10.077' : 'sexuality',
+                'M12.225' : 'pronouns',
+                'm11.89' : 'languages',
             }
-            essentials = dict(zip())
+
+            # Grab the elements that contain the text of the essential attributes
+            essential_text_elements = [
+                element for element in essentials_div.find_elements(By.XPATH, essential_xpath)
+            ]
+
+
+            # Process the elements by extracting the text and mapping that text to what it represents
+            essentials = {}
+            print(len(essential_text_elements))
+            for element in essential_text_elements:
+                svg = element.find_element(By.XPATH, "./..//*[name()= 'svg']")
+                path_fill_d = svg.find_element(By.XPATH, ".//*[name() = 'path']").get_attribute('d')
+                essential_text = element.text or element.get_attribute('textContent')
+
+                if 'Verified' in essential_text:
+                    essentials['verification_status'] = essential_text
+                    continue
+
+                for key in svg_pathfill_d_map.keys():
+                    if key in path_fill_d:
+                        if svg_pathfill_d_map[key] == 'residential_location':
+                            essentials[svg_pathfill_d_map[key]] = essential_text[8:]
+                        else:
+                            essentials[svg_pathfill_d_map[key]] = essential_text
+
+            
             self.logger.info('Successfully scraped essentials')
             return essentials
-        except NoSuchElementException:
+        except NoSuchElementException as e:
+            self.logger.error(f'Failed to scrape essentials - element not found - {e}')
             pass
-        
-
-
-    def scrape_languages(self):
-        pass
+        except Exception as e:
+            self.logger.error(f'Failed to scrape essentials -- {e}')
+            pass
 
 
     def scrape_anthem(self) -> dict[str, str]:
@@ -317,10 +354,6 @@ class TinderBot(BaseScraper):
         lifestlye_index = div_indexes['Lifestyle']
         print(self.scrape_lifestyle(lifestlye_index))
 
-        # TODO: implement this function
-        # essentials_index = div_indexes['Essentials']
-        # print(self.scrape_essentials(essentials_index))
-
         interests_index = div_indexes['Interests']
         print(self.scrape_interests(interests_index))
 
@@ -329,4 +362,6 @@ class TinderBot(BaseScraper):
         print(self.scrape_top_spotify_artists())
 
         print(self.scrape_prompts())
-        # print(div_indexes)
+
+        print(self.scrape_essentials())
+        # next_profile()
