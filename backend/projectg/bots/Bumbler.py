@@ -210,6 +210,5 @@ class Bumbler(BaseScraper):
 
         print(self.scrape_location_card())
 
-        self.next_profile()
 
     
